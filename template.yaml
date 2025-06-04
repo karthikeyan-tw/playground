@@ -55,50 +55,7 @@ spec:
       action: fetch:plain
       input:
         url: ../skeleton
-    - id: generate-config
-      name: Generate Configuration yaml files
-      action: fetch:template
-      input:
-        url: ../backstage/config
-        templateFileExtension: '.njk'
-        targetPath: ./config
-        values:
-          aws_region: ${{ parameters.awsRegion }}
-          databricks_account_id: ${{ parameters.databricksAccountId }}
-          workspaces: ${{ parameters.workspace.workspaceConfiguration }}
-          metastore:
-            storage: 
-              enabled: ${{ parameters.enableMetaStoreStorage }}
-              s3_prefix: ${{ parameters.metastoreStorage.s3_prefix }}
-              s3_versioning: ${{ parameters.metastoreStorage.s3_versioning }}
-          isWorkspaceEnabled: ${{ parameters.isWorkspaceEnabled }}
-          cloud_resources:
-            credential:
-              policy: ${{ parameters.workspace.databricksCredential.databricksCrossAccountPolicyType }}
-            storage: ${{ parameters.workspace.databricksStorages }}
-            encryption: ${{ parameters.workspace.databricksEncryptions }}
-          clusters: ${{ parameters.workspace.clustersConfiguration }}
-          sql_warehouses: ${{ parameters.workspace.sqlWarehousesConfiguration }}
-
-          catalogs: ${{ parameters.catalog.catalogConfiguration }}
-          external_locations: ${{ parameters.catalog.externalLocationConfiguration }}
-
-          monitoring:
-            datadog: false
-            cloudwatch: false
-          config:
-            enable_auto_prefix: true
-            enable_auto_suffix: true
-            create_groups: false
-            network_acls:
-              private:
-                outbound:
-                  - protocol: tcp
-                    port: 80
-          tags:
-            databricks: true
-            tw_accelerator: true
-
+  
     - id: publish
       name: Publish to GitHub
       action: publish:github
