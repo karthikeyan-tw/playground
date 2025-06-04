@@ -16,9 +16,8 @@ spec:
   type: service
   parameters:
     - title: Module Configuration
-      description: Select modules to configure and provide their settings
-      required:
-        - isWorkspaceEnabled
+      description: Configure which modules to include and their settings
+      required: []
       properties:
         isWorkspaceEnabled:
           title: Enable Workspace Module?
@@ -40,6 +39,68 @@ spec:
           title: Enable CI/CD Module?
           type: boolean
           default: false
+
+        # Workspace parameters
+        workspaceName:
+          title: Workspace Name
+          type: string
+          default: thoughtworks-main
+          description: Name for the Databricks workspace
+        enablePrivateAccess:
+          title: Enable Private Access
+          type: boolean
+          default: true
+        s3BucketPrefix:
+          title: S3 Bucket Prefix
+          type: string
+          default: thoughtworks
+          description: Prefix for S3 bucket names
+        databricksCrossAccountPolicyType:
+          title: Cross Account Policy Type
+          type: string
+          default: customer
+
+        # Catalog parameters
+        catalogName:
+          title: Catalog Name
+          type: string
+          default: main_catalog
+          description: Name for the Unity Catalog
+        enableExternalLocation:
+          title: Enable External Location
+          type: boolean
+          default: true
+        s3Prefix:
+          title: S3 Prefix
+          type: string
+          default: thoughtworks
+          description: S3 prefix for catalog storage
+
+        # Compute parameters
+        computeClusterType:
+          title: Compute Cluster Type
+          type: string
+          default: Standard
+          description: Type of compute cluster
+        enableAutoTerminate:
+          title: Enable Auto Terminate
+          type: boolean
+          default: true
+
+        # Security parameters
+        securityLevel:
+          title: Security Level
+          type: string
+          default: high
+          description: Level of security enforcement
+
+        # CI/CD parameters
+        pipelineName:
+          title: Pipeline Name
+          type: string
+          default: main_pipeline
+          description: Name of the CI/CD pipeline
+
       dependencies:
         isWorkspaceEnabled:
           oneOf:
@@ -49,24 +110,10 @@ spec:
             - properties:
                 isWorkspaceEnabled:
                   const: true
-                workspaceName:
-                  title: Workspace Name
-                  type: string
-                  default: thoughtworks-main
-                  description: Name for the Databricks workspace
-                enablePrivateAccess:
-                  title: Enable Private Access
-                  type: boolean
-                  default: true
-                s3BucketPrefix:
-                  title: S3 Bucket Prefix
-                  type: string
-                  default: thoughtworks
-                  description: Prefix for S3 bucket names
-                databricksCrossAccountPolicyType:
-                  title: Cross Account Policy Type
-                  type: string
-                  default: customer
+                workspaceName: {}
+                enablePrivateAccess: {}
+                s3BucketPrefix: {}
+                databricksCrossAccountPolicyType: {}
         isCatalogEnabled:
           oneOf:
             - properties:
@@ -75,20 +122,9 @@ spec:
             - properties:
                 isCatalogEnabled:
                   const: true
-                catalogName:
-                  title: Catalog Name
-                  type: string
-                  default: main_catalog
-                  description: Name for the Unity Catalog
-                enableExternalLocation:
-                  title: Enable External Location
-                  type: boolean
-                  default: true
-                s3Prefix:
-                  title: S3 Prefix
-                  type: string
-                  default: thoughtworks
-                  description: S3 prefix for catalog storage
+                catalogName: {}
+                enableExternalLocation: {}
+                s3Prefix: {}
         isComputeEnabled:
           oneOf:
             - properties:
@@ -97,15 +133,8 @@ spec:
             - properties:
                 isComputeEnabled:
                   const: true
-                computeClusterType:
-                  title: Compute Cluster Type
-                  type: string
-                  default: Standard
-                  description: Type of compute cluster
-                enableAutoTerminate:
-                  title: Enable Auto Terminate
-                  type: boolean
-                  default: true
+                computeClusterType: {}
+                enableAutoTerminate: {}
         isSecurityEnabled:
           oneOf:
             - properties:
@@ -114,11 +143,7 @@ spec:
             - properties:
                 isSecurityEnabled:
                   const: true
-                securityLevel:
-                  title: Security Level
-                  type: string
-                  default: high
-                  description: Level of security enforcement
+                securityLevel: {}
         isCiCdEnabled:
           oneOf:
             - properties:
@@ -127,11 +152,7 @@ spec:
             - properties:
                 isCiCdEnabled:
                   const: true
-                pipelineName:
-                  title: Pipeline Name
-                  type: string
-                  default: main_pipeline
-                  description: Name of the CI/CD pipeline
+                pipelineName: {}
 
   steps:
     - id: fetch-base
