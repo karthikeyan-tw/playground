@@ -40,21 +40,26 @@ spec:
           default: false
     - $yaml: ./parameters/workspace_config_parameters.yaml
       if: ${{ parameters.isWorkspaceEnabled }}
+      title: Workspace Configuration
     - $yaml: ./parameters/catalog_config_parameters.yaml
       if: ${{ parameters.isCatalogEnabled }}
+      title: Catalog Configuration
     - $yaml: ./parameters/compute_config_parameters.yaml
       if: ${{ parameters.isComputeEnabled }}
+      title: Compute Configuration
     - $yaml: ./parameters/security_config_parameters.yaml
       if: ${{ parameters.isSecurityEnabled }}
+      title: Security Configuration
     - $yaml: ./parameters/ci_cd_config_parameters.yaml
       if: ${{ parameters.isCiCdEnabled }}
+      title: CI/CD Configuration
     
   steps:
     - id: fetch-base
       name: Fetch Base
       action: fetch:plain
       input:
-        url: ../skeleton
+        url: ./skeleton
   
     - id: publish
       name: Publish to GitHub
