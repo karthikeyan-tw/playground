@@ -1,7 +1,7 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: Playground Template
+  name: playground-template
   description: |
     This accelerator provides Terraform modules to provision Databricks workspaces,
         compute, Unity Catalog, metastores, and security configurations, designed to be
