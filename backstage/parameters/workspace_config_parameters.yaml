@@ -232,4 +232,6 @@ allOf:
         isWorkspaceEnabled:
           const: false
     then:
-      additionalProperties: false
+      properties:
+        isWorkspaceEnabled:
+          const: false
