@@ -4,15 +4,17 @@ properties:
     title: Enable Workspace?
     type: boolean
     default: false
-  # workspace is defined here, its schema will be set by if/then/else
+required:
+  - isWorkspaceEnabled # Globally required
 
 if:
   properties:
-    isWorkspaceEnabled: { const: true }
+    isWorkspaceEnabled: { const: true } # Condition for the 'then' branch
 then:
+  # Schema when isWorkspaceEnabled is true
   properties:
-    isWorkspaceEnabled: { type: boolean } # Keep isWorkspaceEnabled in this branch's properties
-    workspace: # Define the object schema for workspace
+    # isWorkspaceEnabled is NOT re-declared here, it's global
+    workspace: # Define the full workspace object here
       title: Configuration
       type: object
       properties:
@@ -228,10 +230,12 @@ then:
               max_clusters: 3
               spot_instance_policy: COST_OPTIMIZED
               auto_terminate: 60
-  required: [isWorkspaceEnabled, workspace] 
-else: # isWorkspaceEnabled is false
-  properties:
-    isWorkspaceEnabled: { type: boolean } # Keep isWorkspaceEnabled in this branch's properties
-    # workspace is NOT defined in properties here
-  required: [isWorkspaceEnabled] # Only isWorkspaceEnabled is required
-  additionalProperties: false # Forbids any properties not listed above (i.e., forbids workspace)
+  required: 
+    - workspace # Only workspace is specifically required by this branch
+else:
+  # Schema when isWorkspaceEnabled is false
+  properties: {} # No additional properties defined by this branch
+  # isWorkspaceEnabled is still covered by global properties & required
+  # workspace is NOT defined in properties here.
+  # No specific 'required' for this branch, global 'required' for isWorkspaceEnabled applies.
+  additionalProperties: false # Forbids any properties not globally defined (i.e., forbids workspace)
