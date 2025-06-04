@@ -10,6 +10,7 @@ dependencies:
       - properties:
           isWorkspaceEnabled:
             const: false
+        additionalProperties: false
       - properties:
           isWorkspaceEnabled:
             const: true
@@ -229,6 +230,3 @@ dependencies:
                     max_clusters: 3
                     spot_instance_policy: COST_OPTIMIZED
                     auto_terminate: 60
-else:
-  properties: {}
-  additionalProperties: false
