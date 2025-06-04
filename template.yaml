@@ -15,7 +15,6 @@ spec:
   owner: group:accelerator-publisher
   type: service
   parameters:
-    - $yaml: ./parameters/metastore_security_config_parameters.yaml
     - title: Module Selection
       properties:
         isWorkspaceEnabled:
@@ -38,8 +37,9 @@ spec:
           title: Enable CI/CD Module?
           type: boolean
           default: false
-    - title: Workspace Configuration
-      if: ${{ parameters.isWorkspaceEnabled }}
+
+    - if: ${{ parameters.isWorkspaceEnabled }}
+      title: Workspace Configuration
       properties:
         databricksCrossAccountPolicyType:
           type: string
@@ -249,8 +249,9 @@ spec:
               max_clusters: 3
               spot_instance_policy: COST_OPTIMIZED
               auto_terminate: 60
-    - title: Catalog Configuration
-      if: ${{ parameters.isCatalogEnabled }}
+
+    - if: ${{ parameters.isCatalogEnabled }}
+      title: Catalog Configuration
       properties:
         catalogConfiguration:
           title: Catalog Configuration
@@ -384,8 +385,9 @@ spec:
                 create_bucket: false
                 s3_bucket: databricks-thoughtworks-existing-bucket
                 s3_kms_key: databricks-thoughtworks-existing-bucket
-    - title: Compute Configuration
-      if: ${{ parameters.isComputeEnabled }}
+
+    - if: ${{ parameters.isComputeEnabled }}
+      title: Compute Configuration
       properties:
         compute:
           title: Configuration
@@ -454,8 +456,8 @@ spec:
                   use_cases: 
                     - MANAGED_SERVICES
 
-    - title: Security Configuration
-      if: ${{ parameters.isSecurityEnabled }}
+    - if: ${{ parameters.isSecurityEnabled }}
+      title: Security Configuration
       properties:
         security:
           type: object
@@ -592,8 +594,8 @@ spec:
                   maximum: 10
                   default: 3
 
-    - title: CI/CD Configuration
-      if: ${{ parameters.isCiCdEnabled }}
+    - if: ${{ parameters.isCiCdEnabled }}
+      title: CI/CD Configuration
       properties:
         repoUrl:
           title: Target Repository Location
