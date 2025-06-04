@@ -1,0 +1,142 @@
+title: Catalog Module Configuration
+properties:
+  catalog:
+    title: Configuration
+    type: object
+    properties:
+      catalogConfiguration:
+        title: Catalog Configuration
+        type: array
+        minItems: 1
+        ui:options:
+          addable: true
+          orderable: true
+          removable: true
+          expandable: true
+        items:
+          type: object
+          properties:
+            name:
+              title: Name
+              type: string
+            storage:
+              title: Storage
+              type: object
+              properties:
+                s3_prefix:
+                  title: S3 Prefix
+                  type: string
+                  default: thoughtworks
+            prefix:
+              title: Prefix Control
+              type: boolean
+              ui:widget: radio
+          required:
+            - prefix
+
+          dependencies:
+            prefix:
+              allOf:
+                - if:
+                    properties:
+                      prefix:
+                        const: true
+                  then:
+                    properties:
+                      visible:
+                        title: Visible Control
+                        type: boolean
+                        ui:widget: radio
+                      isolated:
+                        title: Isolated Control
+                        type: boolean
+                        ui:widget: radio
+                      schemas:
+                        type: array
+                        title: Select Schemas to be Deployed
+                        items:
+                          type: string
+                          enum:
+                            - bronze
+                            - silver
+                            - gold
+                        uniqueItems: true
+                        ui:widget: checkboxes
+
+        default:
+          - name: development
+            prefix: false
+            storage:
+              s3_prefix: thoughtworks
+          - name: demo
+            prefix: true
+            storage:
+              s3_prefix: thoughtworks
+            visible: true
+            isolated: false
+            schemas:
+              - bronze
+              - silver
+              - gold
+
+      externalLocationConfiguration:
+        title: External Location
+        type: array
+        minItems: 1
+        ui:options:
+          addable: true
+          orderable: true
+          removable: true
+          expandable: true
+        items:
+          type: object
+          properties:
+            name:
+              title: Name
+              type: string
+            storage:
+              title: Storage
+              type: object
+              properties:
+                create_bucket:
+                  name: Create Bucket?
+                  type: boolean
+                  ui:widget: radio
+              required:
+                - create_bucket
+
+              dependencies:
+                create_bucket:
+                  allOf:
+                    - if:
+                        properties:
+                          create_bucket:
+                            const: false
+                      then:
+                        properties:
+                          s3_bucket:
+                            title: S3 Bucket
+                            type: string
+                          s3_kms_key:
+                            title: S3 KMS Key
+                            type: string
+                    - if:
+                        properties:
+                          create_bucket:
+                            const: true
+                      then:
+                        properties:
+                          s3_prefix:
+                            title: S3 Prefix
+                            type: string
+
+        default:
+          - name: demo
+            storage:
+              create_bucket: true
+              s3_prefix: thoughtworks
+          - name: existing
+            storage:
+              create_bucket: false
+              s3_bucket: databricks-thoughtworks-existing-bucket
+              s3_kms_key: databricks-thoughtworks-existing-bucket
