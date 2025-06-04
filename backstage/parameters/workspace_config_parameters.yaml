@@ -232,7 +232,6 @@ then:
 else: # isWorkspaceEnabled is false
   properties:
     isWorkspaceEnabled: { type: boolean } # Keep isWorkspaceEnabled in this branch's properties
-    workspace: # Define workspace as type null
-      type: "null" 
-  required: [isWorkspaceEnabled, workspace]
-  additionalProperties: false
+    # workspace is NOT defined in properties here
+  required: [isWorkspaceEnabled] # Only isWorkspaceEnabled is required
+  additionalProperties: false # Forbids any properties not listed above (i.e., forbids workspace)
