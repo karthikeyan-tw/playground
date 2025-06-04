@@ -7,10 +7,6 @@ properties:
 dependencies:
   isWorkspaceEnabled:
     properties:
-      isWorkspaceEnabled:
-        enum: [true]
-    required: ["isWorkspaceEnabled"]
-    properties:
       workspace:
         title: Configuration
         type: object
