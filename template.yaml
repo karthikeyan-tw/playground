@@ -38,8 +38,29 @@ spec:
           type: boolean
           default: false
 
-    - $yaml: ./parameters/workspace_config_parameters.yaml
+    - title: Workspace Module Configuration
       if: ${{ parameters.isWorkspaceEnabled }}
+      required:
+        - workspaceName
+      properties:
+        workspaceName:
+          title: Workspace Name
+          type: string
+          description: Name for the Databricks workspace
+          default: thoughtworks-main
+        enablePrivateAccess:
+          title: Enable Private Access
+          type: boolean
+          default: true
+        s3BucketPrefix:
+          title: S3 Bucket Prefix
+          type: string
+          default: thoughtworks
+          description: Prefix for S3 bucket names
+        databricksCrossAccountPolicyType:
+          title: Cross Account Policy Type
+          type: string
+          default: customer
     - $yaml: ./parameters/catalog_config_parameters.yaml
       if: ${{ parameters.isCatalogEnabled }}
     - $yaml: ./parameters/compute_config_parameters.yaml
