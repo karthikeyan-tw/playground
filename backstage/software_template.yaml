@@ -1,0 +1,115 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: playground
+  title: Playground
+  description: |
+    This accelerator provides Terraform modules to provision Databricks workspaces,
+        compute, Unity Catalog, metastores, and security configurations, designed to be
+        composed together for tailored deployments.
+  tags:
+    - databricks
+    - terraform
+    - aws
+    - oidc
+    - data-modernization
+spec:
+  owner: group:accelerator-publisher
+  type: service
+  parameters:
+    - $yaml: ./parameters/metastore_security_config_parameters.yaml
+    - $yaml: ./parameters/workspace_config_parameters.yaml
+    - $yaml: ./parameters/compute_config_parameters.yaml
+    - $yaml: ./parameters/catalog_config_parameters.yaml
+    - $yaml: ./parameters/security_config_parameters.yaml
+    - $yaml: ./parameters/ci_cd_config_parameters.yaml
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:plain
+      input:
+        url: ../skeleton
+    - id: generate-config
+      name: Generate Configuration yaml files
+      action: fetch:template
+      input:
+        url: ../backstage/config
+        templateFileExtension: '.njk'
+        targetPath: ./config
+        values:
+          aws_region: ${{ parameters.awsRegion }}
+          databricks_account_id: ${{ parameters.databricksAccountId }}
+          workspaces: ${{ parameters.workspace.workspaceConfiguration }}
+          metastore:
+            storage: 
+              enabled: ${{ parameters.enableMetaStoreStorage }}
+              s3_prefix: ${{ parameters.metastoreStorage.s3_prefix }}
+              s3_versioning: ${{ parameters.metastoreStorage.s3_versioning }}
+          isWorkspaceEnabled: ${{ parameters.isWorkspaceEnabled }}
+          cloud_resources:
+            credential:
+              policy: ${{ parameters.workspace.databricksCredential.databricksCrossAccountPolicyType }}
+            storage: ${{ parameters.workspace.databricksStorages }}
+            encryption: ${{ parameters.workspace.databricksEncryptions }}
+          clusters: ${{ parameters.workspace.clustersConfiguration }}
+          sql_warehouses: ${{ parameters.workspace.sqlWarehousesConfiguration }}
+
+          catalogs: ${{ parameters.catalog.catalogConfiguration }}
+          external_locations: ${{ parameters.catalog.externalLocationConfiguration }}
+
+          monitoring:
+            datadog: false
+            cloudwatch: false
+          config:
+            enable_auto_prefix: true
+            enable_auto_suffix: true
+            create_groups: false
+            network_acls:
+              private:
+                outbound:
+                  - protocol: tcp
+                    port: 80
+          tags:
+            databricks: true
+            tw_accelerator: true
+    - id: prepare-tf-state-key-content
+      name: Prepare Terraform State Key Content
+      action: fs:write
+      input:
+        path: ./tf_state_key_value.txt # Temporary file in the workspace
+        content: "databricks/${{ uuid() }}/terraform.tfstate"
+
+    - id: read-tf-state-key-value
+      name: Read Terraform State Key Value
+      action: fs:readdir
+      input:
+        path: ./tf_state_key_value.txt
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: [ 'github.com' ]
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: private
+        defaultBranch: main
+        token: ${{ secrets.USER_OAUTH_TOKEN or false }}
+        description: Databricks Terraform Accelerator
+        secrets:
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.databricksClientSecret }}
+        repoVariables:
+          DATABRICKS_HOST: ${{ parameters.databricksHost }}
+          DATABRICKS_CLIENT_ID: ${{ parameters.databricksClientId }}
+          AWS_REGION: ${{ parameters.awsRegion }}
+          AWS_ROLE_TO_ASSUME: ${{ parameters.awsOidcRoleArn }}
+          TF_BACKEND_BUCKET: ${{ parameters.tfStateBucket }}
+          TF_VAR_s3_bucket_name_main: ${{ parameters.appS3BucketName }}
+          # this need to add another action, consider to use: "databricks/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}/terraform.tfstate"
+          TF_STATE_KEY: ${{ steps['read-tf-state-key-value'].output.content }}
+
+  output:
+    links:
+      - title: GitHub Repository
+        icon: github
+        url: ${{ steps.publish.output.remoteUrl }}

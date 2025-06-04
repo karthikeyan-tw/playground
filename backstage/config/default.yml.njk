@@ -1,0 +1,63 @@
+
+## Module Metastore
+metastore:
+  storage:
+    enabled: ${{ values.metastore.storage.enabled }}
+    s3_prefix:  ${{values.metastore.storage.s3_prefix}}
+    s3_versioning:  ${{ values.metastore.storage.s3_versioning }}
+
+workspace_enabled: ${{ values.isWorkspaceEnabled }}
+
+{% if values.isWorkspaceEnabled %}
+workspaces:
+{% for ws in values.workspaces %}
+  - name: ${{ ws.name }}
+    storage: ${{ ws.storage }}
+    network: ${{ ws.network }}
+    {% if ws.private_access %}
+    private_access: ${{ ws.private_access }}
+    {% endif %}
+    {% if ws.encryption %}
+    encryption:
+      storage: ${{ ws.encryption.storage }}
+    {% endif %}
+{% endfor %}
+
+
+cloud_resources:
+  credential:
+    policy: ${{ values.cloud_resources.credential.policy }}
+  storage:
+{% for storage_item in values.cloud_resources.storage %}
+    - name: ${{ storage_item.name }}
+      {% if storage_item.s3_prefix %}
+      s3_prefix: ${{ storage_item.s3_prefix }}
+      {% endif %}
+{% endfor %}
+  encryption:
+{% for encryption_item in values.cloud_resources.encryption %}
+    - name: ${{ encryption_item.name }}
+      use_cases:
+{% for uc in encryption_item.use_cases %}
+        - ${{ uc }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+monitoring:
+  datadog: ${{ values.monitoring.datadog }}
+  cloudwatch: ${{ values.monitoring.cloudwatch }}
+
+config:
+  enable_auto_prefix: ${{ values.config.enable_auto_prefix }}
+  enable_auto_suffix: ${{ values.config.enable_auto_suffix }}
+  create_groups: ${{ values.config.create_groups }}
+  network_acls:
+    private:
+      outbound:
+        - protocol: ${{ values.config.network_acls.private.outbound[0].protocol }}
+          port: ${{ values.config.network_acls.private.outbound[0].port }} # HTTP Connectivity
+
+tags:
+  databricks: ${{ values.tags.databricks }}
+  tw_accelerator: ${{ values.tags.tw_accelerator }}

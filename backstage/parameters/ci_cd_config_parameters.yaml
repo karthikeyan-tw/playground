@@ -5,7 +5,6 @@ required:
   - awsOidcRoleArn
   - databricksClientId
   - databricksClientSecret
-  - appS3BucketName
 properties:
     repoUrl:
       title: Target Repository Location
@@ -23,10 +22,6 @@ properties:
       title: Terraform State S3 Bucket Name
       type: string
       description: "Name of the S3 bucket to store Terraform state files."
-    appS3BucketName:
-      title: Application S3 Bucket Name
-      type: string
-      description: "Name of the main S3 bucket for application data storage."
     awsRegion:
       title: AWS Region
       type: string
@@ -40,10 +35,6 @@ properties:
       title: Databricks Account Id
       type: string
       description: "Account ID of the Databricks"
-    databricksHost:
-      title: Databricks Host
-      type: string
-      description: "Databricks workspace URL (e.g., https://dbc-12345678-abcd.cloud.databricks.com)"
     databricksClientId:
       title: Databricks Client ID
       type: string

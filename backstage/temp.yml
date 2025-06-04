@@ -1,0 +1,205 @@
+clusters:
+{% for cluster_item in values.clusters %}
+  - name: ${{ cluster_item.name }}
+    spark_version: ${{ cluster_item.spark_version }}
+    photon: ${{ cluster_item.photon }}
+    driver_instance_type: ${{ cluster_item.driver_instance_type }}
+    instance_type: ${{ cluster_item.instance_type }}
+    spark_conf:
+      spark.app.name: ${{ cluster_item.spark_conf.spark_app_name }}
+    on_demand:
+      composition: ${{ cluster_item.on_demand.composition }}
+      bid_price_percentage: ${{ cluster_item.on_demand.bid_price_percentage }}
+    auto_terminate: ${{ cluster_item.auto_terminate }}
+{% endfor %}
+
+sql_warehouses:
+{% for warehouse_item in values.sql_warehouses %}
+  - name: ${{ warehouse_item.name }}
+    size: ${{ warehouse_item.size }}
+    photon: ${{ warehouse_item.photon }}
+    serverless: ${{ warehouse_item.serverless }}
+    min_clusters: ${{ warehouse_item.min_clusters }}
+    max_clusters: ${{ warehouse_item.max_clusters }}
+    spot_instance_policy: ${{ warehouse_item.spot_instance_policy }}
+    auto_terminate: ${{ warehouse_item.auto_terminate }}
+{% endfor %}
+
+## Module Catalog
+catalogs:
+{% for catalog_item in values.catalogs %}
+    - name: ${{ catalog_item.name }}
+    storage:
+        s3_prefix: ${{ catalog_item.storage.s3_prefix }}
+    prefix: ${{ catalog_item.prefix }}
+    {% if catalog_item.prefix %}
+    visible: ${{ catalog_item.visible }}
+    isolated: ${{ catalog_item.isolated }}
+    schemas: ${{ catalog_item.schemas }}
+    {% endif %}
+{% endfor %}
+
+external_locations:
+{% for el in values.external_locations %}
+    - name: ${{ el.name }}
+    storage:
+        create_bucket: ${{ el.storage.create_bucket }}
+    {% if el.storage.create_bucket %}
+        s3_prefix: ${{ el.storage.create_bucket }}
+    {% endif %}
+    prefix: ${{ catalog_item.s3_prefix }}
+##todo: need to add else condition
+{% endfor %}
+
+
+  - name: demo
+    storage:
+      create_bucket: true
+      s3_prefix: thoughtworks
+  - name: existing
+    storage:
+      create_bucket: false
+      s3_bucket: databricks-thoughtworks-existing-bucket
+      s3_kms_key: databricks-thoughtworks-existing-bucket
+
+
+## Module Security
+security_profile:
+  enabled: false
+  compliance_standards:
+    - HIPAA
+    - PCI-DSS
+
+groups:
+  - name: data_scientists
+    entitlements:
+      allow_cluster_create: true
+  - name: developers
+  - name: dashboard
+
+workspace_acls:
+  compute_policy:
+    - name: Power User Compute
+      groups:
+        - name: developers
+          permission: CAN_USE
+  compute:
+    - name: general
+      groups:
+        - name: developers
+          permission: CAN_RESTART
+        - name: dashboard
+          permission: CAN_ATTACH_TO
+  sql_warehouse:
+    - name: Starter Warehouse
+      groups:
+        - name: data_scientists
+          permission: CAN_USE
+        - name: developers
+          permission: CAN_USE
+  job:
+    - name: "[UCX] assessment"
+      groups:
+        - name: data_scientists
+          permission: CAN_VIEW
+        - name: developers
+          permission: CAN_MANAGE_RUN
+  delta_live_tables:
+    - name: ema_demo_bronze_consumption
+      groups:
+        - name: data_scientists
+          permission: CAN_VIEW
+        - name: developers
+          permission: CAN_RUN
+    - name: ema_demo_bronze_lookup
+      groups:
+        - name: data_scientists
+          permission: CAN_VIEW
+        - name: developers
+          permission: CAN_RUN
+  secret_scope:
+    - name: dbdemos
+      groups:
+        - name: data_scientists
+          permission: MANAGE
+        - name: developers
+          permission: READ
+  token:
+    groups:
+      - name: developers
+        permission: CAN_USE
+
+unity_catalog:
+  metastore:
+    groups:
+      - name: data_scientists
+        privileges:
+          - CREATE_EXTERNAL_LOCATION
+  catalog:
+    - catalog_name: sandbox_demo
+      groups:
+        - name: data_scientists
+          privileges:
+            - ALL_PRIVILEGES
+        - name: dashboard
+          privileges:
+            - USE_CATALOG
+            - SELECT
+  schema:
+    - catalog_name: sandbox_demo
+      schema_name: bronze
+      groups:
+        - name: dashboard
+          privileges:
+            - ALL_PRIVILEGES
+  table:
+    - catalog_name: sandbox_demo
+      schema_name: bronze
+      table_name: sample_table
+      groups:
+        - name: developers
+          privileges:
+            - SELECT
+            - MODIFY
+  view:
+    - catalog_name: sandbox_demo
+      schema_name: bronze
+      view_name: sample_view
+      groups:
+        - name: developers
+          privileges:
+            - SELECT
+            - APPLY_TAG
+    - catalog_name: sandbox_demo
+      schema_name: bronze
+      view_name: sample_view_bronze
+      groups:
+        - name: developers
+          privileges:
+            - SELECT
+            - APPLY_TAG
+        - name: dashboard
+          privileges:
+            - SELECT
+  volume:
+    - catalog_name: sandbox_demo
+      schema_name: bronze
+      volume_name: volume
+      groups:
+        - name: data_scientists
+          privileges:
+            - ALL_PRIVILEGES
+        - name: developers
+          privileges:
+            - WRITE_VOLUME
+            - READ_VOLUME
+  external_location:
+    - name: catalog-storage-sandbox-demo
+      groups:
+        - name: data_scientists
+          privileges:
+            - ALL_PRIVILEGES
+        - name: developers
+          privileges:
+            - READ_FILES
+            - WRITE_FILES
