@@ -46,25 +46,21 @@ spec:
           description: "Controls visibility of the advanced security (network ACLs, etc.) parameters."
 
     - title: Module Configuration
-      dependencies:
-        enable_metastore_security_config:
+      properties:
+        metastoreStorage:
+          title: Storage Configuration
+          type: object
+          description: Storage Configuration for the Metastore
           properties:
-            metastoreStorage:
-              title: Storage Configuration
-              type: object
-              description: Storage Configuration for the Metastore
-              properties:
-                s3_prefix:
-                  title: S3 Prefix
-                  type: string
-                  default: thoughtworks
-                s3_versioning:
-                  title: S3 Versioning
-                  type: boolean
-                  default: true
-        enable_workspace_config:
-          properties:
-            workspace:
+            s3_prefix:
+              title: S3 Prefix
+              type: string
+              default: thoughtworks
+            s3_versioning:
+              title: S3 Versioning
+              type: boolean
+              default: true
+        workspace:
               title: Workspace Object Configuration
               type: object
               properties:
@@ -171,11 +167,9 @@ spec:
                         encryption:
                           storage: dbfs
                       - name: thoughtworks-finance
-                        storage: finance
-                        network: finance
-        enable_compute_config:
-          properties:
-            compute:
+                                              storage: finance
+                      network: finance
+        compute:
               title: Compute Configuration
               type: object
               properties:
@@ -284,11 +278,9 @@ spec:
                         serverless: true
                         min_clusters: 2
                         max_clusters: 3
-                        spot_instance_policy: COST_OPTIMIZED
-                        auto_terminate: 60
-        enable_catalog_config:
-          properties:
-            catalog:
+                                              spot_instance_policy: COST_OPTIMIZED
+                      auto_terminate: 60
+        catalog:
               title: Catalog Configuration
               type: object
               properties:
@@ -344,11 +336,9 @@ spec:
                     default:
                       - name: main
                         url: "s3://bucket/external-location/"
-                        credential_name: unity-catalog-credential
-                        force_destroy: true
-        enable_advanced_security_config:
-          properties:
-            security:
+                                              credential_name: unity-catalog-credential
+                      force_destroy: true
+        security:
               title: Security Configuration
               type: object
               properties:
