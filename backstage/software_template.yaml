@@ -46,8 +46,7 @@ spec:
           description: "Controls whether to provision advanced security."
 
     - title: Metastore Configuration
-      # Properties for this step are now direct children
-      properties:
+      properties: # Fields are direct children of this step
         metastoreStorage:
           title: Storage Configuration
           type: object
@@ -61,14 +60,12 @@ spec:
               title: S3 Versioning
               type: boolean
               default: true
-      # Dependency for the entire "Metastore Configuration" step
-      dependencies:
-        enable_metastore_security_config: [true] # Show this step if true
+      dependencies: # Condition for this entire step
+        enable_metastore_security_config: [true]
                   
     - title: Workspace Configuration
-      # Properties for this step are now direct children
-      properties:
-        workspace:
+      properties: # Fields are direct children of this step
+        workspace: # This object will be parameters.workspace
           title: Workspace Object Configuration
           type: object
           properties:
@@ -134,7 +131,7 @@ spec:
                   - name: dbfs
                     use_cases: 
                       - MANAGED_SERVICES
-            workspaceConfiguration:
+            workspaceConfiguration: # This is parameters.workspace.workspaceConfiguration
               title: Workspace
               type: array
               minItems: 1
@@ -177,18 +174,16 @@ spec:
                   - name: thoughtworks-finance
                     storage: finance
                     network: finance
-      # Dependency for the entire "Workspace Configuration" step
-      dependencies:
-        enable_workspace_config: [true] # Show this step if true
+      dependencies: # Condition for this entire step
+        enable_workspace_config: [true]
 
     - title: Compute Configuration
-      # Properties for this step are now direct children
-      properties:
-        compute:
+      properties: # Fields are direct children of this step
+        compute: # This object will be parameters.compute
           title: Compute Configuration
           type: object
           properties:
-            clustersConfiguration:
+            clustersConfiguration: # parameters.compute.clustersConfiguration
               title: Clusters
               type: array
               minItems: 1
@@ -248,7 +243,7 @@ spec:
                       composition: DRIVER_ONLY
                       bid_price_percentage: 100
                     auto_terminate: 60
-            sqlWarehousesConfiguration:
+            sqlWarehousesConfiguration: # parameters.compute.sqlWarehousesConfiguration
               title: SQL Warehouses
               type: array
               minItems: 1
@@ -295,18 +290,16 @@ spec:
                     max_clusters: 3
                     spot_instance_policy: COST_OPTIMIZED
                     auto_terminate: 60
-      # Dependency for the entire "Compute Configuration" step
-      dependencies:
-        enable_compute_config: [true] # Show this step if true
+      dependencies: # Condition for this entire step
+        enable_compute_config: [true]
 
     - title: Catalog Configuration
-      # Properties for this step are now direct children
-      properties:
-        catalog:
+      properties: # Fields are direct children of this step
+        catalog: # This object will be parameters.catalog
           title: Catalog Configuration
           type: object
           properties:
-            catalogConfiguration:
+            catalogConfiguration: # parameters.catalog.catalogConfiguration
               title: Catalogs
               type: array
               minItems: 1
@@ -331,7 +324,7 @@ spec:
                   - name: main
                     storage_root: "s3://bucket/unity-catalog/"
                     force_destroy: true
-            externalLocationConfiguration:
+            externalLocationConfiguration: # parameters.catalog.externalLocationConfiguration
               title: External Locations
               type: array
               minItems: 1
@@ -360,18 +353,16 @@ spec:
                     url: "s3://bucket/external-location/"
                     credential_name: unity-catalog-credential
                     force_destroy: true
-      # Dependency for the entire "Catalog Configuration" step
-      dependencies:
-        enable_catalog_config: [true] # Show this step if true
+      dependencies: # Condition for this entire step
+        enable_catalog_config: [true]
 
     - title: Advanced Security Configuration
-      # Properties for this step are now direct children
-      properties:
-        security:
+      properties: # Fields are direct children of this step
+        security: # This object will be parameters.security
           title: Security Configuration
           type: object
           properties:
-            networkAcls:
+            networkAcls: # parameters.security.networkAcls
               title: Network ACLs
               type: array
               minItems: 1
@@ -409,9 +400,8 @@ spec:
                     rules:
                       - protocol: tcp
                         port: 80
-      # Dependency for the entire "Advanced Security Configuration" step
-      dependencies:
-        enable_advanced_security_config: [true] # Show this step if true
+      dependencies: # Condition for this entire step
+        enable_advanced_security_config: [true]
 
     - title: CI/CD Configuration
       properties:
@@ -458,7 +448,7 @@ spec:
               description: The S3 bucket name for application data
       required:
         - cicd
-  # ... rest of your template (steps, output) remains the same
+
   steps:
     - id: fetch-base
       name: Fetch Base
@@ -475,24 +465,34 @@ spec:
         values:
           aws_region: ${{ parameters.cicd.awsRegion or 'us-east-1' }}
           databricks_account_id: ${{ parameters.cicd.databricksClientId or '' }}
-          workspaces: ${{ parameters.workspace.workspaceConfiguration or [] }} # This will correctly be empty if the step is not shown and not filled
-          metastore:
-            storage: 
-              enabled: ${{ parameters.enable_metastore_security_config }}
-              s3_prefix: ${{ parameters.metastoreStorage.s3_prefix or 'thoughtworks' }}
-              s3_versioning: ${{ parameters.metastoreStorage.s3_versioning or true }}
+
+          # Metastore related values - ensuring robustness
+          metastore_storage_enabled: ${{ parameters.enable_metastore_security_config }}
+          metastore_s3_prefix: ${{ (parameters.metastoreStorage and parameters.metastoreStorage.s3_prefix) or 'thoughtworks' }}
+          # Ensure s3_versioning is handled correctly if metastoreStorage is undefined.
+          # If s3_versioning is boolean, (undefined and true) is false. (parameters.metastoreStorage and parameters.metastoreStorage.s3_versioning) will be undefined if not set.
+          # Defaulting to true if not specifically set and enabled.
+          metastore_s3_versioning: ${{ (parameters.metastoreStorage and parameters.metastoreStorage.s3_versioning is defined) and parameters.metastoreStorage.s3_versioning or true }}
+
+          # Workspace related values - ensuring robustness
           isWorkspaceEnabled: ${{ parameters.enable_workspace_config }}
-          cloud_resources:
-            credential:
-              policy: ${{ parameters.workspace.databricksCredential.databricksCrossAccountPolicyType or 'customer' }}
-            storage: ${{ parameters.workspace.databricksStorages or [] }}
-            encryption: ${{ parameters.workspace.databricksEncryptions or [] }}
-          clusters: ${{ parameters.compute.clustersConfiguration or [] }}
-          sql_warehouses: ${{ parameters.compute.sqlWarehousesConfiguration or [] }}
+          # parameters.workspace is the object containing .databricksCredential, .databricksStorages, .databricksEncryptions, .workspaceConfiguration
+          workspaces: ${{ (parameters.workspace and parameters.workspace.workspaceConfiguration) or [] }}
+          cloud_resources_credential_policy: ${{ (parameters.workspace and parameters.workspace.databricksCredential and parameters.workspace.databricksCredential.databricksCrossAccountPolicyType) or 'customer' }}
+          cloud_resources_storage: ${{ (parameters.workspace and parameters.workspace.databricksStorages) or [] }}
+          cloud_resources_encryption: ${{ (parameters.workspace and parameters.workspace.databricksEncryptions) or [] }}
+          
+          # Compute related values - ensuring robustness
+          # isComputeEnabled: ${{ parameters.enable_compute_config }} # You can pass this if Nunjucks needs it
+          clusters: ${{ (parameters.compute and parameters.compute.clustersConfiguration) or [] }}
+          sql_warehouses: ${{ (parameters.compute and parameters.compute.sqlWarehousesConfiguration) or [] }}
 
-          catalogs: ${{ parameters.catalog.catalogConfiguration or [] }}
-          external_locations: ${{ parameters.catalog.externalLocationConfiguration or [] }}
+          # Catalog related values - ensuring robustness
+          # isCatalogEnabled: ${{ parameters.enable_catalog_config }} # You can pass this if Nunjucks needs it
+          catalogs: ${{ (parameters.catalog and parameters.catalog.catalogConfiguration) or [] }}
+          external_locations: ${{ (parameters.catalog and parameters.catalog.externalLocationConfiguration) or [] }}
 
+          # --- Values from original template that seem generally applicable ---
           monitoring:
             datadog: false
             cloudwatch: false
@@ -500,7 +500,7 @@ spec:
             enable_auto_prefix: true
             enable_auto_suffix: true
             create_groups: false
-            network_acls:
+            network_acls: # This seems like a default, adjust if it should be conditional on advanced_security
               private:
                 outbound:
                   - protocol: tcp
