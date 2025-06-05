@@ -17,6 +17,38 @@ spec:
   owner: group:accelerator-publisher
   type: service
   parameters:
+    - title: Module Selection
+      properties:
+        enable_metastore_security_config:
+          title: "Enable Metastore & Initial Security Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the Metastore and initial security parameters."
+        enable_workspace_config:
+          title: "Enable Workspace Configuration Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the Databricks Workspace parameters."
+        enable_compute_config:
+          title: "Enable Compute Configuration Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the Compute (clusters, etc.) parameters."
+        enable_catalog_config:
+          title: "Enable Catalog Configuration Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the Unity Catalog parameters."
+        enable_advanced_security_config:
+          title: "Enable Advanced Security Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the advanced security (network ACLs, etc.) parameters."
+        enable_ci_cd_config:
+          title: "Enable CI/CD Configuration Module?"
+          type: boolean
+          default: false
+          description: "Controls visibility of the CI/CD integration parameters."
     - $yaml: ./parameters/metastore_security_config_parameters.yaml
     - $yaml: ./parameters/workspace_config_parameters.yaml
     - $yaml: ./parameters/compute_config_parameters.yaml
