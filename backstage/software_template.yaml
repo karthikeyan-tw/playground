@@ -46,28 +46,29 @@ spec:
           description: "Controls whether to provision advanced security."
 
     - title: Metastore Configuration
-      dependencies:
-        enable_metastore_security_config:
+      # Properties for this step are now direct children
+      properties:
+        metastoreStorage:
+          title: Storage Configuration
+          type: object
+          description: Storage Configuration for the Metastore
           properties:
-            metastoreStorage:
-              title: Storage Configuration
-              type: object
-              description: Storage Configuration for the Metastore
-              properties:
-                s3_prefix:
-                  title: S3 Prefix
-                  type: string
-                  default: thoughtworks
-                s3_versioning:
-                  title: S3 Versioning
-                  type: boolean
-                  default: true
-
+            s3_prefix:
+              title: S3 Prefix
+              type: string
+              default: thoughtworks
+            s3_versioning:
+              title: S3 Versioning
+              type: boolean
+              default: true
+      # Dependency for the entire "Metastore Configuration" step
+      dependencies:
+        enable_metastore_security_config: [true] # Show this step if true
+                  
     - title: Workspace Configuration
-      dependencies:
-        enable_workspace_config:
-          properties:
-            workspace:
+      # Properties for this step are now direct children
+      properties:
+        workspace:
           title: Workspace Object Configuration
           type: object
           properties:
@@ -176,12 +177,14 @@ spec:
                   - name: thoughtworks-finance
                     storage: finance
                     network: finance
+      # Dependency for the entire "Workspace Configuration" step
+      dependencies:
+        enable_workspace_config: [true] # Show this step if true
 
     - title: Compute Configuration
-      dependencies:
-        enable_compute_config:
-          properties:
-            compute:
+      # Properties for this step are now direct children
+      properties:
+        compute:
           title: Compute Configuration
           type: object
           properties:
@@ -292,12 +295,14 @@ spec:
                     max_clusters: 3
                     spot_instance_policy: COST_OPTIMIZED
                     auto_terminate: 60
+      # Dependency for the entire "Compute Configuration" step
+      dependencies:
+        enable_compute_config: [true] # Show this step if true
 
     - title: Catalog Configuration
-      dependencies:
-        enable_catalog_config:
-          properties:
-            catalog:
+      # Properties for this step are now direct children
+      properties:
+        catalog:
           title: Catalog Configuration
           type: object
           properties:
@@ -355,12 +360,14 @@ spec:
                     url: "s3://bucket/external-location/"
                     credential_name: unity-catalog-credential
                     force_destroy: true
+      # Dependency for the entire "Catalog Configuration" step
+      dependencies:
+        enable_catalog_config: [true] # Show this step if true
 
     - title: Advanced Security Configuration
-      dependencies:
-        enable_advanced_security_config:
-          properties:
-            security:
+      # Properties for this step are now direct children
+      properties:
+        security:
           title: Security Configuration
           type: object
           properties:
@@ -402,6 +409,9 @@ spec:
                     rules:
                       - protocol: tcp
                         port: 80
+      # Dependency for the entire "Advanced Security Configuration" step
+      dependencies:
+        enable_advanced_security_config: [true] # Show this step if true
 
     - title: CI/CD Configuration
       properties:
@@ -448,7 +458,7 @@ spec:
               description: The S3 bucket name for application data
       required:
         - cicd
-
+  # ... rest of your template (steps, output) remains the same
   steps:
     - id: fetch-base
       name: Fetch Base
@@ -465,7 +475,7 @@ spec:
         values:
           aws_region: ${{ parameters.cicd.awsRegion or 'us-east-1' }}
           databricks_account_id: ${{ parameters.cicd.databricksClientId or '' }}
-          workspaces: ${{ parameters.workspace.workspaceConfiguration or [] }}
+          workspaces: ${{ parameters.workspace.workspaceConfiguration or [] }} # This will correctly be empty if the step is not shown and not filled
           metastore:
             storage: 
               enabled: ${{ parameters.enable_metastore_security_config }}
@@ -530,11 +540,10 @@ spec:
           AWS_ROLE_TO_ASSUME: ${{ parameters.cicd.awsOidcRoleArn }}
           TF_BACKEND_BUCKET: ${{ parameters.cicd.tfStateBucket }}
           TF_VAR_s3_bucket_name_main: ${{ parameters.cicd.appS3BucketName }}
-          # this need to add another action, consider to use: "databricks/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}/terraform.tfstate"
           TF_STATE_KEY: ${{ steps['read-tf-state-key-value'].output.content }}
 
   output:
     links:
       - title: GitHub Repository
         icon: github
-        url: ${{ steps.publish.output.remoteUrl }} 
+        url: ${{ steps.publish.output.remoteUrl }}
