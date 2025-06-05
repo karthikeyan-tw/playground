@@ -3,79 +3,69 @@ if:
   properties:
     enable_workspace_config: { const: true } # Check the global toggle for this module
 then:
-  # --- ORIGINAL CONTENT of workspace_config_parameters.yaml STARTS HERE ---
-  title: Workspace Module Configuration # This is the title for this specific module's step
+  # --- If enable_workspace_config is true, show all workspace parameters directly ---
+  title: Workspace Module Configuration 
   properties:
-    isWorkspaceEnabled: # This is the internal toggle for components *within* the Workspace module
-      title: "Enable Workspace Components? (e.g., specific configurations, clusters, SQL warehouses)"
-      type: boolean
-      default: false
-  required:
-    - isWorkspaceEnabled # isWorkspaceEnabled is required if the Workspace Module itself is enabled
-
-  # This internal if/then/else handles the visibility of the 'workspace' object based on 'isWorkspaceEnabled'
-  if:
-    properties:
-      isWorkspaceEnabled: { const: true }
-  then:
-    properties:
-      # isWorkspaceEnabled is NOT re-declared here as it's already in this 'then' branch's parent scope
-      workspace: 
-        title: Workspace Object Configuration
-        type: object
-        properties:
-          databricksCredential:
-            title: Databricks Credential
+    # The internal 'isWorkspaceEnabled' toggle has been removed.
+    # The 'workspace' object is now a direct property.
+    workspace: 
+      title: Workspace Object Configuration
+      type: object
+      # All parameters previously under the internal 'isWorkspaceEnabled: true' branch
+      # are now direct properties of this 'workspace' object.
+      properties:
+        databricksCredential:
+          title: Databricks Credential
+          type: object
+          properties:
+            databricksCrossAccountPolicyType:
+              type: string
+              title: Cross Account Policy Type
+              default: customer
+        databricksStorages:
+          title: Databricks Storage
+          type: array
+          minItems: 1
+          ui:options:
+            addable: true
+            orderable: true
+            removable: true
+          items:
             type: object
             properties:
-              databricksCrossAccountPolicyType:
+              name:
+                title: Name
                 type: string
-                title: Cross Account Policy Type
-                default: customer
-          databricksStorages:
-            title: Databricks Storage
-            type: array
-            minItems: 1
-            ui:options:
-              addable: true
-              orderable: true
-              removable: true
-            items:
-              type: object
-              properties:
-                name:
-                  title: Name
+              s3_prefix:
+                title: S3 prefix
+                type: string
+          default:
+            - name: main
+              s3_prefix: thoughtworks
+            - name: finance
+        databricksEncryptions:
+          title: Databricks Encryptions
+          type: array
+          minItems: 1
+          ui:options:
+            addable: true
+            orderable: true
+            removable: true
+            expandable: true
+          items:
+            type: object
+            properties:
+              name:
+                title: Name
+                type: string
+              use_cases:
+                title: Use Cases
+                type: array
+                items:
                   type: string
-                s3_prefix:
-                  title: S3 prefix
-                  type: string
-            default:
-              - name: main
-                s3_prefix: thoughtworks
-              - name: finance
-          databricksEncryptions:
-            title: Databricks Encryptions
-            type: array
-            minItems: 1
-            ui:options:
-              addable: true
-              orderable: true
-              removable: true
-              expandable: true
-            items:
-              type: object
-              properties:
-                name:
-                  title: Name
-                  type: string
-                use_cases:
-                  title: Use Cases
-                  type: array
-                  items:
-                    type: string
-                    enum:
-                      - MANAGED_SERVICES
-                      - STORAGE
+                  enum:
+                    - MANAGED_SERVICES
+                    - STORAGE
                   uniqueItems: true
                   ui:widget: checkboxes
             default:
@@ -86,39 +76,39 @@ then:
               - name: dbfs
                 use_cases: 
                   - MANAGED_SERVICES
-          workspaceConfiguration:
-            title: Workspace
-            type: array
-            minItems: 1
-            ui:options:
-              addable: true
-              orderable: true
-              removable: true
-              expandable: true
-            items:
-              type: object
-              properties:
-                name:
-                  title: Name
-                  type: string
-                storage:
-                  title: Storage
-                  type: string
-                  enum: ["main", "finance"]  
-                network:
-                  title: Network
-                  type: string
-                private_access:
-                  title: Private Access
-                  type: boolean
-                  ui:widget: radio
-                encryption:
-                  title: Encryption
-                  type: object
-                  properties:
-                    storage:
-                      title: Storage
-                      type: string
+        workspaceConfiguration:
+          title: Workspace
+          type: array
+          minItems: 1
+          ui:options:
+            addable: true
+            orderable: true
+            removable: true
+            expandable: true
+          items:
+            type: object
+            properties:
+              name:
+                title: Name
+                type: string
+              storage:
+                title: Storage
+                type: string
+                enum: ["main", "finance"]  
+              network:
+                title: Network
+                type: string
+              private_access:
+                title: Private Access
+                type: boolean
+                ui:widget: radio
+              encryption:
+                title: Encryption
+                type: object
+                properties:
+                  storage:
+                    title: Storage
+                    type: string
             default:
               - name: thoughtworks-main
                 storage: main
@@ -129,54 +119,54 @@ then:
               - name: thoughtworks-finance
                 storage: finance
                 network: finance
-          clustersConfiguration:
-            title: Clusters
-            type: array
-            minItems: 1
-            ui:options:
-              addable: true
-              orderable: true
-              removable: true
-              expandable: true
-            items:
-              type: object
-              properties:
-                name:
-                  title: Name
-                  type: string
-                spark_version:
-                  title: Spark Version
-                  type: string
-                photon:
-                  title: Enable Photon
-                  type: boolean
-                driver_instance_type:
-                  title: Driver Instance Type
-                  type: string
-                instance_type:
-                  title: Worker Instance Type
-                  type: string
-                spark_conf:
-                  title: Spark Configuration
-                  type: object
-                  properties:
-                    spark_app_name:
-                      title: Spark App Name
-                      type: string
-                on_demand:
-                  title: On-Demand Configuration
-                  type: object
-                  properties:
-                    composition:
-                      title: Composition
-                      type: string
-                      enum: [DRIVER_ONLY]
-                    bid_price_percentage:
-                      title: Bid Price Percentage
-                      type: integer
-                auto_terminate:
-                  title: Auto Terminate (minutes)
-                  type: integer
+        clustersConfiguration:
+          title: Clusters
+          type: array
+          minItems: 1
+          ui:options:
+            addable: true
+            orderable: true
+            removable: true
+            expandable: true
+          items:
+            type: object
+            properties:
+              name:
+                title: Name
+                type: string
+              spark_version:
+                title: Spark Version
+                type: string
+              photon:
+                title: Enable Photon
+                type: boolean
+              driver_instance_type:
+                title: Driver Instance Type
+                type: string
+              instance_type:
+                title: Worker Instance Type
+                type: string
+              spark_conf:
+                title: Spark Configuration
+                type: object
+                properties:
+                  spark_app_name:
+                    title: Spark App Name
+                    type: string
+              on_demand:
+                title: On-Demand Configuration
+                type: object
+                properties:
+                  composition:
+                    title: Composition
+                    type: string
+                    enum: [DRIVER_ONLY]
+                  bid_price_percentage:
+                    title: Bid Price Percentage
+                    type: integer
+              auto_terminate:
+                title: Auto Terminate (minutes)
+                type: integer
             default:
               - name: Shared Cluster
                 spark_version: LTS
@@ -189,44 +179,44 @@ then:
                   composition: DRIVER_ONLY
                   bid_price_percentage: 100
                 auto_terminate: 60
-          sqlWarehousesConfiguration:
-            title: SQL Warehouses
-            type: array
-            minItems: 1
-            ui:options:
-              addable: true
-              orderable: true
-              removable: true
-              expandable: true
-            items:
-              type: object
-              properties:
-                name:
-                  title: Name
-                  type: string
-                size:
-                  title: Size
-                  type: string
-                  enum: [Small, Medium, Large]
-                photon:
-                  title: Enable Photon
-                  type: boolean
-                serverless:
-                  title: Enable Serverless
-                  type: boolean
-                min_clusters:
-                  title: Minimum Clusters
-                  type: integer
-                max_clusters:
-                  title: Maximum Clusters
-                  type: integer
-                spot_instance_policy:
-                  title: Spot Instance Policy
-                  type: string
-                  enum: [COST_OPTIMIZED, RELIABILITY_OPTIMIZED]
-                auto_terminate:
-                  title: Auto Terminate (minutes)
-                  type: integer
+        sqlWarehousesConfiguration:
+          title: SQL Warehouses
+          type: array
+          minItems: 1
+          ui:options:
+            addable: true
+            orderable: true
+            removable: true
+            expandable: true
+          items:
+            type: object
+            properties:
+              name:
+                title: Name
+                type: string
+              size:
+                title: Size
+                type: string
+                enum: [Small, Medium, Large]
+              photon:
+                title: Enable Photon
+                type: boolean
+              serverless:
+                title: Enable Serverless
+                type: boolean
+              min_clusters:
+                title: Minimum Clusters
+                type: integer
+              max_clusters:
+                title: Maximum Clusters
+                type: integer
+              spot_instance_policy:
+                title: Spot Instance Policy
+                type: string
+                enum: [COST_OPTIMIZED, RELIABILITY_OPTIMIZED]
+              auto_terminate:
+                title: Auto Terminate (minutes)
+                type: integer
             default:
               - name: SQL Shared
                 size: Small
@@ -236,17 +226,12 @@ then:
                 max_clusters: 3
                 spot_instance_policy: COST_OPTIMIZED
                 auto_terminate: 60
-    required: 
-      - workspace # 'workspace' object is required if 'isWorkspaceEnabled' is true
-  else: # This 'else' is for the internal 'isWorkspaceEnabled' toggle
-    properties: {} 
-    additionalProperties: false # Forbids 'workspace' if 'isWorkspaceEnabled' is false
-  # --- ORIGINAL CONTENT of workspace_config_parameters.yaml ENDS HERE ---
+  required: 
+    - workspace # The 'workspace' object itself is now directly required if the module is enabled
+  # The internal if/then/else for 'isWorkspaceEnabled' has been removed.
+  # --- End of simplified content for the 'then' branch ---
 else:
   # If 'enable_workspace_config' (the global toggle) is false,
   # this entire file should contribute no active UI schema elements.
-  # Defining an empty properties set and additionalProperties: false helps ensure that
-  # any data that *might* have been defined by this file (like 'isWorkspaceEnabled' or 'workspace')
-  # is considered an additional property if this 'else' branch is active, which should prevent leakage.
   properties: {}
   additionalProperties: false

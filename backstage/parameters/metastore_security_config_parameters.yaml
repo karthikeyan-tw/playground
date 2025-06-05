@@ -3,38 +3,28 @@ if:
   properties:
     enable_metastore_security_config: { const: true } # Check the global toggle for this module
 then:
-  # --- ORIGINAL CONTENT of metastore_security_config_parameters.yaml STARTS HERE ---
+  # --- If enable_metastore_security_config is true, show all metastore parameters directly ---
   title: Metastore Module Configuration
   description: Configure Unity Catalog Metastore
-  required: []
   properties:
-    enableMetaStoreStorage:
-      title: Enable Storage Configuration
-      type: boolean
-      default: false
-  dependencies:
-    enableMetaStoreStorage:
-      allOf:
-        - if:
-            properties:
-              enableMetaStoreStorage:
-                const: true
-          then:
-            properties:
-              metastoreStorage:
-                title: Storage Configuration
-                type: object
-                description: Storage Configuration
-                properties:
-                  s3_prefix:
-                    title: S3 Prefix
-                    type: string
-                    default: thoughtworks
-                  s3_versioning:
-                    title: S3 Versioning
-                    type: boolean
-                    default: true
-  # --- ORIGINAL CONTENT of metastore_security_config_parameters.yaml ENDS HERE ---
+    # The internal 'enableMetaStoreStorage' toggle and its dependencies block have been removed.
+    # The 'metastoreStorage' object is now a direct property.
+    metastoreStorage:
+      title: Storage Configuration
+      type: object
+      description: Storage Configuration for the Metastore
+      properties:
+        s3_prefix:
+          title: S3 Prefix
+          type: string
+          default: thoughtworks
+        s3_versioning:
+          title: S3 Versioning
+          type: boolean
+          default: true
+  required:
+    - metastoreStorage # metastoreStorage is now directly required if the module is enabled
+  # --- End of simplified content for the 'then' branch ---
 else:
   # If 'enable_metastore_security_config' (the global toggle) is false,
   # this entire file should contribute no active UI schema elements.
