@@ -46,24 +46,28 @@ spec:
           description: "Controls whether to provision advanced security."
 
     - title: Metastore Configuration
-      properties:
-        metastoreStorage:
-          title: Storage Configuration
-          type: object
-          description: Storage Configuration for the Metastore
+      dependencies:
+        enable_metastore_security_config:
           properties:
-            s3_prefix:
-              title: S3 Prefix
-              type: string
-              default: thoughtworks
-            s3_versioning:
-              title: S3 Versioning
-              type: boolean
-              default: true
+            metastoreStorage:
+              title: Storage Configuration
+              type: object
+              description: Storage Configuration for the Metastore
+              properties:
+                s3_prefix:
+                  title: S3 Prefix
+                  type: string
+                  default: thoughtworks
+                s3_versioning:
+                  title: S3 Versioning
+                  type: boolean
+                  default: true
 
     - title: Workspace Configuration
-      properties:
-        workspace:
+      dependencies:
+        enable_workspace_config:
+          properties:
+            workspace:
           title: Workspace Object Configuration
           type: object
           properties:
@@ -174,8 +178,10 @@ spec:
                     network: finance
 
     - title: Compute Configuration
-      properties:
-        compute:
+      dependencies:
+        enable_compute_config:
+          properties:
+            compute:
           title: Compute Configuration
           type: object
           properties:
@@ -288,8 +294,10 @@ spec:
                     auto_terminate: 60
 
     - title: Catalog Configuration
-      properties:
-        catalog:
+      dependencies:
+        enable_catalog_config:
+          properties:
+            catalog:
           title: Catalog Configuration
           type: object
           properties:
@@ -349,8 +357,10 @@ spec:
                     force_destroy: true
 
     - title: Advanced Security Configuration
-      properties:
-        security:
+      dependencies:
+        enable_advanced_security_config:
+          properties:
+            security:
           title: Security Configuration
           type: object
           properties:
