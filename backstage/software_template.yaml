@@ -51,414 +51,438 @@ spec:
           description: "Controls visibility of the CI/CD parameters."
 
     - title: Metastore & Initial Security Configuration
-      if: ${{ parameters.enable_metastore_security_config }}
-      properties:
-        metastoreStorage:
-          title: Storage Configuration
-          type: object
-          description: Storage Configuration for the Metastore
-          properties:
-            s3_prefix:
-              title: S3 Prefix
-              type: string
-              default: thoughtworks
-            s3_versioning:
-              title: S3 Versioning
-              type: boolean
-              default: true
-      required:
-        - metastoreStorage
+      if:
+        properties:
+          enable_metastore_security_config:
+            const: true
+      then:
+        properties:
+          metastoreStorage:
+            title: Storage Configuration
+            type: object
+            description: Storage Configuration for the Metastore
+            properties:
+              s3_prefix:
+                title: S3 Prefix
+                type: string
+                default: thoughtworks
+              s3_versioning:
+                title: S3 Versioning
+                type: boolean
+                default: true
+        required:
+          - metastoreStorage
 
     - title: Workspace Configuration
-      if: ${{ parameters.enable_workspace_config }}
-      properties:
-        workspace:
-          title: Workspace Object Configuration
-          type: object
-          properties:
-            databricksCredential:
-              title: Databricks Credential
-              type: object
-              properties:
-                databricksCrossAccountPolicyType:
-                  type: string
-                  title: Cross Account Policy Type
-                  default: customer
-            databricksStorages:
-              title: Databricks Storage
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-              items:
+      if:
+        properties:
+          enable_workspace_config:
+            const: true
+      then:
+        properties:
+          workspace:
+            title: Workspace Object Configuration
+            type: object
+            properties:
+              databricksCredential:
+                title: Databricks Credential
                 type: object
                 properties:
-                  name:
-                    title: Name
+                  databricksCrossAccountPolicyType:
                     type: string
-                  s3_prefix:
-                    title: S3 prefix
-                    type: string
-              default:
-                - name: main
-                  s3_prefix: thoughtworks
-                - name: finance
-            databricksEncryptions:
-              title: Databricks Encryptions
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  use_cases:
-                    title: Use Cases
-                    type: array
-                    items:
+                    title: Cross Account Policy Type
+                    default: customer
+              databricksStorages:
+                title: Databricks Storage
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
                       type: string
-                      enum:
+                    s3_prefix:
+                      title: S3 prefix
+                      type: string
+                default:
+                  - name: main
+                    s3_prefix: thoughtworks
+                  - name: finance
+              databricksEncryptions:
+                title: Databricks Encryptions
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    use_cases:
+                      title: Use Cases
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - MANAGED_SERVICES
+                          - STORAGE
+                        uniqueItems: true
+                        ui:widget: checkboxes
+                  default:
+                    - name: main
+                      use_cases: 
                         - MANAGED_SERVICES
                         - STORAGE
-                      uniqueItems: true
-                      ui:widget: checkboxes
-                default:
-                  - name: main
-                    use_cases: 
-                      - MANAGED_SERVICES
-                      - STORAGE
-                  - name: dbfs
-                    use_cases: 
-                      - MANAGED_SERVICES
-            workspaceConfiguration:
-              title: Workspace
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  storage:
-                    title: Storage
-                    type: string
-                    enum: ["main", "finance"]
-                  network:
-                    title: Network
-                    type: string
-                  private_access:
-                    title: Private Access
-                    type: boolean
-                    ui:widget: radio
-                  encryption:
-                    title: Encryption
-                    type: object
-                    properties:
-                      storage:
-                        title: Storage
-                        type: string
-                default:
-                  - name: thoughtworks-main
-                    storage: main
-                    network: main
-                    private_access: true
+                    - name: dbfs
+                      use_cases: 
+                        - MANAGED_SERVICES
+              workspaceConfiguration:
+                title: Workspace
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    storage:
+                      title: Storage
+                      type: string
+                      enum: ["main", "finance"]
+                    network:
+                      title: Network
+                      type: string
+                    private_access:
+                      title: Private Access
+                      type: boolean
+                      ui:widget: radio
                     encryption:
-                      storage: dbfs
-                  - name: thoughtworks-finance
-                    storage: finance
-                    network: finance
-      required:
-        - workspace
-
-    - title: Compute Configuration
-      if: ${{ parameters.enable_compute_config }}
-      properties:
-        compute:
-          title: Compute Configuration
-          type: object
-          properties:
-            clustersConfiguration:
-              title: Clusters
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  spark_version:
-                    title: Spark Version
-                    type: string
-                  photon:
-                    title: Enable Photon
-                    type: boolean
-                  driver_instance_type:
-                    title: Driver Instance Type
-                    type: string
-                  instance_type:
-                    title: Worker Instance Type
-                    type: string
-                  spark_conf:
-                    title: Spark Configuration
-                    type: object
-                    properties:
-                      spark_app_name:
-                        title: Spark App Name
-                        type: string
-                  on_demand:
-                    title: On-Demand Configuration
-                    type: object
-                    properties:
-                      composition:
-                        title: Composition
-                        type: string
-                        enum: [DRIVER_ONLY]
-                      bid_price_percentage:
-                        title: Bid Price Percentage
-                        type: integer
-                  auto_terminate:
-                    title: Auto Terminate (minutes)
-                    type: integer
-                default:
-                  - name: Shared Cluster
-                    spark_version: LTS
-                    photon: true
-                    driver_instance_type: m5.large
-                    instance_type: m5.xlarge
-                    spark_conf:
-                      spark_app_name: general_tasks
-                    on_demand:
-                      composition: DRIVER_ONLY
-                      bid_price_percentage: 100
-                    auto_terminate: 60
-            sqlWarehousesConfiguration:
-              title: SQL Warehouses
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  size:
-                    title: Size
-                    type: string
-                    enum: [Small, Medium, Large]
-                  photon:
-                    title: Enable Photon
-                    type: boolean
-                  serverless:
-                    title: Enable Serverless
-                    type: boolean
-                  min_clusters:
-                    title: Minimum Clusters
-                    type: integer
-                  max_clusters:
-                    title: Maximum Clusters
-                    type: integer
-                  spot_instance_policy:
-                    title: Spot Instance Policy
-                    type: string
-                    enum: [COST_OPTIMIZED, RELIABILITY_OPTIMIZED]
-                  auto_terminate:
-                    title: Auto Terminate (minutes)
-                    type: integer
-                default:
-                  - name: SQL Shared
-                    size: Small
-                    photon: true
-                    serverless: true
-                    min_clusters: 2
-                    max_clusters: 3
-                    spot_instance_policy: COST_OPTIMIZED
-                    auto_terminate: 60
-      required:
-        - compute
-
-    - title: Catalog Configuration
-      if: ${{ parameters.enable_catalog_config }}
-      properties:
-        catalog:
-          title: Catalog Configuration
-          type: object
-          properties:
-            catalogConfiguration:
-              title: Catalogs
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  storage_root:
-                    title: Storage Root
-                    type: string
-                  force_destroy:
-                    title: Force Destroy
-                    type: boolean
-                default:
-                  - name: main
-                    storage_root: "s3://bucket/unity-catalog/"
-                    force_destroy: true
-            externalLocationConfiguration:
-              title: External Locations
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  url:
-                    title: URL
-                    type: string
-                  credential_name:
-                    title: Credential Name
-                    type: string
-                  force_destroy:
-                    title: Force Destroy
-                    type: boolean
-                default:
-                  - name: main
-                    url: "s3://bucket/external-location/"
-                    credential_name: unity-catalog-credential
-                    force_destroy: true
-      required:
-        - catalog
-
-    - title: Advanced Security Configuration
-      if: ${{ parameters.enable_advanced_security_config }}
-      properties:
-        security:
-          title: Security Configuration
-          type: object
-          properties:
-            networkAcls:
-              title: Network ACLs
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  type:
-                    title: Type
-                    type: string
-                    enum: [private, public]
-                  rules:
-                    title: Rules
-                    type: array
-                    items:
+                      title: Encryption
                       type: object
                       properties:
-                        protocol:
-                          title: Protocol
+                        storage:
+                          title: Storage
                           type: string
-                          enum: [tcp, udp]
-                        port:
-                          title: Port
+                  default:
+                    - name: thoughtworks-main
+                      storage: main
+                      network: main
+                      private_access: true
+                      encryption:
+                        storage: dbfs
+                    - name: thoughtworks-finance
+                      storage: finance
+                      network: finance
+        required:
+          - workspace
+
+    - title: Compute Configuration
+      if:
+        properties:
+          enable_compute_config:
+            const: true
+      then:
+        properties:
+          compute:
+            title: Compute Configuration
+            type: object
+            properties:
+              clustersConfiguration:
+                title: Clusters
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    spark_version:
+                      title: Spark Version
+                      type: string
+                    photon:
+                      title: Enable Photon
+                      type: boolean
+                    driver_instance_type:
+                      title: Driver Instance Type
+                      type: string
+                    instance_type:
+                      title: Worker Instance Type
+                      type: string
+                    spark_conf:
+                      title: Spark Configuration
+                      type: object
+                      properties:
+                        spark_app_name:
+                          title: Spark App Name
+                          type: string
+                    on_demand:
+                      title: On-Demand Configuration
+                      type: object
+                      properties:
+                        composition:
+                          title: Composition
+                          type: string
+                          enum: [DRIVER_ONLY]
+                        bid_price_percentage:
+                          title: Bid Price Percentage
                           type: integer
-                default:
-                  - name: default-private
-                    type: private
+                    auto_terminate:
+                      title: Auto Terminate (minutes)
+                      type: integer
+                  default:
+                    - name: Shared Cluster
+                      spark_version: LTS
+                      photon: true
+                      driver_instance_type: m5.large
+                      instance_type: m5.xlarge
+                      spark_conf:
+                        spark_app_name: general_tasks
+                      on_demand:
+                        composition: DRIVER_ONLY
+                        bid_price_percentage: 100
+                      auto_terminate: 60
+              sqlWarehousesConfiguration:
+                title: SQL Warehouses
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    size:
+                      title: Size
+                      type: string
+                      enum: [Small, Medium, Large]
+                    photon:
+                      title: Enable Photon
+                      type: boolean
+                    serverless:
+                      title: Enable Serverless
+                      type: boolean
+                    min_clusters:
+                      title: Minimum Clusters
+                      type: integer
+                    max_clusters:
+                      title: Maximum Clusters
+                      type: integer
+                    spot_instance_policy:
+                      title: Spot Instance Policy
+                      type: string
+                      enum: [COST_OPTIMIZED, RELIABILITY_OPTIMIZED]
+                    auto_terminate:
+                      title: Auto Terminate (minutes)
+                      type: integer
+                  default:
+                    - name: SQL Shared
+                      size: Small
+                      photon: true
+                      serverless: true
+                      min_clusters: 2
+                      max_clusters: 3
+                      spot_instance_policy: COST_OPTIMIZED
+                      auto_terminate: 60
+        required:
+          - compute
+
+    - title: Catalog Configuration
+      if:
+        properties:
+          enable_catalog_config:
+            const: true
+      then:
+        properties:
+          catalog:
+            title: Catalog Configuration
+            type: object
+            properties:
+              catalogConfiguration:
+                title: Catalogs
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    storage_root:
+                      title: Storage Root
+                      type: string
+                    force_destroy:
+                      title: Force Destroy
+                      type: boolean
+                  default:
+                    - name: main
+                      storage_root: "s3://bucket/unity-catalog/"
+                      force_destroy: true
+              externalLocationConfiguration:
+                title: External Locations
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    url:
+                      title: URL
+                      type: string
+                    credential_name:
+                      title: Credential Name
+                      type: string
+                    force_destroy:
+                      title: Force Destroy
+                      type: boolean
+                  default:
+                    - name: main
+                      url: "s3://bucket/external-location/"
+                      credential_name: unity-catalog-credential
+                      force_destroy: true
+        required:
+          - catalog
+
+    - title: Advanced Security Configuration
+      if:
+        properties:
+          enable_advanced_security_config:
+            const: true
+      then:
+        properties:
+          security:
+            title: Security Configuration
+            type: object
+            properties:
+              networkAcls:
+                title: Network ACLs
+                type: array
+                minItems: 1
+                ui:options:
+                  addable: true
+                  orderable: true
+                  removable: true
+                  expandable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      title: Name
+                      type: string
+                    type:
+                      title: Type
+                      type: string
+                      enum: [private, public]
                     rules:
-                      - protocol: tcp
-                        port: 80
-      required:
-        - security
+                      title: Rules
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          protocol:
+                            title: Protocol
+                            type: string
+                            enum: [tcp, udp]
+                          port:
+                            title: Port
+                            type: integer
+                  default:
+                    - name: default-private
+                      type: private
+                      rules:
+                        - protocol: tcp
+                          port: 80
+        required:
+          - security
 
     - title: CI/CD Configuration
-      if: ${{ parameters.enable_ci_cd_config }}
-      properties:
-        cicd:
-          title: CI/CD Configuration
-          type: object
-          properties:
-            repoUrl:
-              title: Repository URL
-              type: string
-              ui:field: RepoUrlPicker
-              ui:options:
-                allowedHosts:
-                  - github.com
-            databricksHost:
-              title: Databricks Host
-              type: string
-              description: The Databricks workspace URL
-            databricksClientId:
-              title: Databricks Client ID
-              type: string
-              description: The OAuth application ID for Databricks
-            databricksClientSecret:
-              title: Databricks Client Secret
-              type: string
-              ui:widget: password
-              description: The OAuth application secret for Databricks
-            awsRegion:
-              title: AWS Region
-              type: string
-              default: us-east-1
-              description: The AWS region where resources will be deployed
-            awsOidcRoleArn:
-              title: AWS OIDC Role ARN
-              type: string
-              description: The ARN of the AWS role to assume for deployment
-            tfStateBucket:
-              title: Terraform State S3 Bucket
-              type: string
-              description: The S3 bucket name for storing Terraform state
-            appS3BucketName:
-              title: Application S3 Bucket Name
-              type: string
-              description: The S3 bucket name for application data
-      required:
-        - cicd
+      if:
+        properties:
+          enable_ci_cd_config:
+            const: true
+      then:
+        properties:
+          cicd:
+            title: CI/CD Configuration
+            type: object
+            properties:
+              repoUrl:
+                title: Repository URL
+                type: string
+                ui:field: RepoUrlPicker
+                ui:options:
+                  allowedHosts:
+                    - github.com
+              databricksHost:
+                title: Databricks Host
+                type: string
+                description: The Databricks workspace URL
+              databricksClientId:
+                title: Databricks Client ID
+                type: string
+                description: The OAuth application ID for Databricks
+              databricksClientSecret:
+                title: Databricks Client Secret
+                type: string
+                ui:widget: password
+                description: The OAuth application secret for Databricks
+              awsRegion:
+                title: AWS Region
+                type: string
+                default: us-east-1
+                description: The AWS region where resources will be deployed
+              awsOidcRoleArn:
+                title: AWS OIDC Role ARN
+                type: string
+                description: The ARN of the AWS role to assume for deployment
+              tfStateBucket:
+                title: Terraform State S3 Bucket
+                type: string
+                description: The S3 bucket name for storing Terraform state
+              appS3BucketName:
+                title: Application S3 Bucket Name
+                type: string
+                description: The S3 bucket name for application data
+        required:
+          - cicd
 
   steps:
     - id: fetch-base
@@ -548,4 +572,4 @@ spec:
     links:
       - title: GitHub Repository
         icon: github
-        url: ${{ steps.publish.output.remoteUrl }}
+        url: ${{ steps.publish.output.remoteUrl }} 
