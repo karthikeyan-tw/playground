@@ -1,159 +1,171 @@
-title: Security Module Configuration
-type: object
-properties:
-  security:
-    type: object
-    title: Security Profile Configuration
-    properties:
-      enabled:
-        type: boolean
-        title: Enable Security Configuration
-        default: false
-    allOf:
-      - if:
-          properties:
-            enabled:
-              const: true
-        then:
-          properties:
-            compliance_standards:
-              title: Compliance Standards
-              type: array
-              description: Select applicable compliance standards
-              items:
-                type: string
-                enum:
-                  - HIPAA
-                  - PCI-DSS
-                  - SOX
-                  - GDPR
-                  - SOC2
-              uniqueItems: true
-              ui:widget: checkboxes
-              ui:options:
-                inline: true
+# This entire file is now conditional on 'enable_advanced_security_config' from software_template.yaml
+if:
+  properties:
+    enable_advanced_security_config: { const: true } # Check the global toggle for this module
+then:
+  # --- ORIGINAL CONTENT of security_config_parameters.yaml STARTS HERE ---
+  title: Security Module Configuration
+  type: object
+  properties:
+    security:
+      type: object
+      title: Security Profile Configuration
+      properties:
+        enabled:
+          type: boolean
+          title: Enable Security Configuration
+          default: false
+      allOf:
+        - if:
+            properties:
+              enabled:
+                const: true
+          then:
+            properties:
+              compliance_standards:
+                title: Compliance Standards
+                type: array
+                description: Select applicable compliance standards
+                items:
+                  type: string
+                  enum:
+                    - HIPAA
+                    - PCI-DSS
+                    - SOX
+                    - GDPR
+                    - SOC2
+                uniqueItems: true
+                ui:widget: checkboxes
+                ui:options:
+                  inline: true
 
-            encryption:
-              title: Encryption Settings
-              type: object
-              description: Configure encryption requirements
-              properties:
-                enforce_encryption_at_rest:
-                  type: boolean
-                  title: Enforce Encryption at Rest
-                  default: true
-                enforce_encryption_in_transit:
-                  type: boolean
-                  title: Enforce Encryption in Transit
-                  default: true
-                customer_managed_keys:
-                  type: boolean
-                  title: Use Customer Managed Keys
-                  default: false
+              encryption:
+                title: Encryption Settings
+                type: object
+                description: Configure encryption requirements
+                properties:
+                  enforce_encryption_at_rest:
+                    type: boolean
+                    title: Enforce Encryption at Rest
+                    default: true
+                  enforce_encryption_in_transit:
+                    type: boolean
+                    title: Enforce Encryption in Transit
+                    default: true
+                  customer_managed_keys:
+                    type: boolean
+                    title: Use Customer Managed Keys
+                    default: false
 
-            network_security:
-              title: Network Security Settings
-              type: object
-              description: Configure network security policies
-              properties:
-                private_link_enabled:
-                  type: boolean
-                  title: Enable Private Link
-                  default: false
-                ip_access_lists:
-                  title: IP Access Lists
-                  type: array
-                  description: Configure IP access control lists
-                  items:
-                    type: object
-                    required:
-                      - label
-                      - ip_addresses
-                      - list_type
-                    properties:
-                      label:
-                        type: string
-                        title: Label
-                      ip_addresses:
-                        type: array
-                        title: IP Addresses/CIDR Blocks
-                        items:
+              network_security:
+                title: Network Security Settings
+                type: object
+                description: Configure network security policies
+                properties:
+                  private_link_enabled:
+                    type: boolean
+                    title: Enable Private Link
+                    default: false
+                  ip_access_lists:
+                    title: IP Access Lists
+                    type: array
+                    description: Configure IP access control lists
+                    items:
+                      type: object
+                      required:
+                        - label
+                        - ip_addresses
+                        - list_type
+                      properties:
+                        label:
                           type: string
-                          pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/(?:[0-9]|[1-2][0-9]|3[0-2]))?$'
-                          description: IP address or CIDR block (e.g., 192.168.1.0/24)
-                      list_type:
-                        type: string
-                        enum: [ALLOW, BLOCK]
-                        default: ALLOW
-                        title: List Type
-                  ui:options:
-                    addable: true
-                    removable: true
+                          title: Label
+                        ip_addresses:
+                          type: array
+                          title: IP Addresses/CIDR Blocks
+                          items:
+                            type: string
+                            pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/(?:[0-9]|[1-2][0-9]|3[0-2]))?$'
+                            description: IP address or CIDR block (e.g., 192.168.1.0/24)
+                        list_type:
+                          type: string
+                          enum: [ALLOW, BLOCK]
+                          default: ALLOW
+                          title: List Type
+                    ui:options:
+                      addable: true
+                      removable: true
 
-  advanced_security:
-    type: object
-    title: Advanced Security Features
-    properties:
-      enabled:
-        type: boolean
-        title: Enable Advanced Security Features
-        default: false
-    allOf:
-      - if:
-          properties:
-            enabled:
-              const: true
-        then:
-          properties:
-            audit_logging:
-              title: Audit Logging Configuration
-              type: object
-              properties:
-                enabled:
-                  type: boolean
-                  title: Enable Audit Logging
-                  default: true
-                log_retention_days:
-                  type: integer
-                  title: Log Retention Period (Days)
-                  minimum: 30
-                  maximum: 2555
-                  default: 90
-                export_to_s3:
-                  type: boolean
-                  title: Export Logs to S3
-                  default: false
+    advanced_security:
+      type: object
+      title: Advanced Security Features
+      properties:
+        enabled:
+          type: boolean
+          title: Enable Advanced Security Features
+          default: false
+      allOf:
+        - if:
+            properties:
+              enabled:
+                const: true
+          then:
+            properties:
+              audit_logging:
+                title: Audit Logging Configuration
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                    title: Enable Audit Logging
+                    default: true
+                  log_retention_days:
+                    type: integer
+                    title: Log Retention Period (Days)
+                    minimum: 30
+                    maximum: 2555
+                    default: 90
+                  export_to_s3:
+                    type: boolean
+                    title: Export Logs to S3
+                    default: false
 
-            monitoring:
-              title: Security Monitoring
-              type: object
-              properties:
-                enable_threat_detection:
-                  type: boolean
-                  title: Enable Threat Detection
-                  default: false
-                enable_anomaly_detection:
-                  type: boolean
-                  title: Enable Anomaly Detection
-                  default: false
+              monitoring:
+                title: Security Monitoring
+                type: object
+                properties:
+                  enable_threat_detection:
+                    type: boolean
+                    title: Enable Threat Detection
+                    default: false
+                  enable_anomaly_detection:
+                    type: boolean
+                    title: Enable Anomaly Detection
+                    default: false
 
-            access_control:
-              title: Access Control Settings
-              type: object
-              properties:
-                enforce_mfa:
-                  type: boolean
-                  title: Enforce Multi-Factor Authentication
-                  default: false
-                session_timeout_minutes:
-                  type: integer
-                  title: Session Timeout (Minutes)
-                  minimum: 15
-                  maximum: 1440
-                  default: 480
-                max_concurrent_sessions:
-                  type: integer
-                  title: Maximum Concurrent Sessions
-                  minimum: 1
-                  maximum: 10
-                  default: 3
+              access_control:
+                title: Access Control Settings
+                type: object
+                properties:
+                  enforce_mfa:
+                    type: boolean
+                    title: Enforce Multi-Factor Authentication
+                    default: false
+                  session_timeout_minutes:
+                    type: integer
+                    title: Session Timeout (Minutes)
+                    minimum: 15
+                    maximum: 1440
+                    default: 480
+                  max_concurrent_sessions:
+                    type: integer
+                    title: Maximum Concurrent Sessions
+                    minimum: 1
+                    maximum: 10
+                    default: 3
+  # --- ORIGINAL CONTENT of security_config_parameters.yaml ENDS HERE ---
+else:
+  # If 'enable_advanced_security_config' (the global toggle) is false,
+  # this entire file should contribute no active UI schema elements.
+  properties: {}
+  additionalProperties: false
