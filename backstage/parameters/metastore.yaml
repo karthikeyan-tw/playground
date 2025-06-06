@@ -1,0 +1,30 @@
+title: Metastore Module Configuration
+description: Configure Unity Catalog Metastore
+required: []
+properties:
+  enableMetaStoreStorage:
+    title: Enable Storage Configuration
+    type: boolean
+    default: false
+dependencies:
+  enableMetaStoreStorage:
+    allOf:
+      - if:
+          properties:
+            enableMetaStoreStorage:
+              const: true
+        then:
+          properties:
+            metastoreStorage:
+              title: Storage Configuration
+              type: object
+              description: Storage Configuration
+              properties:
+                s3_prefix:
+                  title: S3 Prefix
+                  type: string
+                  default: thoughtworks
+                s3_versioning:
+                  title: S3 Versioning
+                  type: boolean
+                  default: true

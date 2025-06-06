@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: playground
-  title: Playground
+  name: databricks-accelerator
+  title: Databricks Terraform Accelerator
   description: |
     This accelerator provides Terraform modules to provision Databricks workspaces,
         compute, Unity Catalog, metastores, and security configurations, designed to be
@@ -17,437 +17,9 @@ spec:
   owner: group:accelerator-publisher
   type: service
   parameters:
-    - title: Module Selection
-      properties:
-        enable_metastore_security_config:
-          title: "Enable Metastore & Initial Security Module?"
-          type: boolean
-          default: false
-          description: "Controls whether to provision metastore and initial security."
-        enable_workspace_config:
-          title: "Enable Workspace Configuration Module?"
-          type: boolean
-          default: false
-          description: "Controls whether to provision workspace resources."
-        enable_compute_config:
-          title: "Enable Compute Configuration Module?"
-          type: boolean
-          default: false
-          description: "Controls whether to provision compute resources."
-        enable_catalog_config:
-          title: "Enable Catalog Configuration Module?"
-          type: boolean
-          default: false
-          description: "Controls whether to provision catalog resources."
-        enable_advanced_security_config:
-          title: "Enable Advanced Security Module?"
-          type: boolean
-          default: false
-          description: "Controls whether to provision advanced security."
+    - $yaml: ./parameters/metastore.yaml
+    - $yaml: ./parameters/workspace_.yaml
 
-    - title: Metastore Configuration
-      properties: # Fields are direct children of this step
-        metastoreStorage:
-          title: Storage Configuration
-          type: object
-          description: Storage Configuration for the Metastore
-          properties:
-            s3_prefix:
-              title: S3 Prefix
-              type: string
-              default: thoughtworks
-            s3_versioning:
-              title: S3 Versioning
-              type: boolean
-              default: true
-      dependencies: # Condition for this entire step
-        enable_metastore_security_config: [true]
-                  
-    - title: Workspace Configuration
-      properties: # Fields are direct children of this step
-        workspace: # This object will be parameters.workspace
-          title: Workspace Object Configuration
-          type: object
-          properties:
-            databricksCredential:
-              title: Databricks Credential
-              type: object
-              properties:
-                databricksCrossAccountPolicyType:
-                  type: string
-                  title: Cross Account Policy Type
-                  default: customer
-            databricksStorages:
-              title: Databricks Storage
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  s3_prefix:
-                    title: S3 prefix
-                    type: string
-              default:
-                - name: main
-                  s3_prefix: thoughtworks
-                - name: finance
-            databricksEncryptions:
-              title: Databricks Encryptions
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  use_cases:
-                    title: Use Cases
-                    type: array
-                    items:
-                      type: string
-                      enum:
-                        - MANAGED_SERVICES
-                        - STORAGE
-                      uniqueItems: true
-                      ui:widget: checkboxes
-                default:
-                  - name: main
-                    use_cases: 
-                      - MANAGED_SERVICES
-                      - STORAGE
-                  - name: dbfs
-                    use_cases: 
-                      - MANAGED_SERVICES
-            workspaceConfiguration: # This is parameters.workspace.workspaceConfiguration
-              title: Workspace
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  storage:
-                    title: Storage
-                    type: string
-                    enum: ["main", "finance"]
-                  network:
-                    title: Network
-                    type: string
-                  private_access:
-                    title: Private Access
-                    type: boolean
-                    ui:widget: radio
-                  encryption:
-                    title: Encryption
-                    type: object
-                    properties:
-                      storage:
-                        title: Storage
-                        type: string
-                default:
-                  - name: thoughtworks-main
-                    storage: main
-                    network: main
-                    private_access: true
-                    encryption:
-                      storage: dbfs
-                  - name: thoughtworks-finance
-                    storage: finance
-                    network: finance
-      dependencies: # Condition for this entire step
-        enable_workspace_config: [true]
-
-    - title: Compute Configuration
-      properties: # Fields are direct children of this step
-        compute: # This object will be parameters.compute
-          title: Compute Configuration
-          type: object
-          properties:
-            clustersConfiguration: # parameters.compute.clustersConfiguration
-              title: Clusters
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  spark_version:
-                    title: Spark Version
-                    type: string
-                  photon:
-                    title: Enable Photon
-                    type: boolean
-                  driver_instance_type:
-                    title: Driver Instance Type
-                    type: string
-                  instance_type:
-                    title: Worker Instance Type
-                    type: string
-                  spark_conf:
-                    title: Spark Configuration
-                    type: object
-                    properties:
-                      spark_app_name:
-                        title: Spark App Name
-                        type: string
-                  on_demand:
-                    title: On-Demand Configuration
-                    type: object
-                    properties:
-                      composition:
-                        title: Composition
-                        type: string
-                        enum: [DRIVER_ONLY]
-                      bid_price_percentage:
-                        title: Bid Price Percentage
-                        type: integer
-                  auto_terminate:
-                    title: Auto Terminate (minutes)
-                    type: integer
-                default:
-                  - name: Shared Cluster
-                    spark_version: LTS
-                    photon: true
-                    driver_instance_type: m5.large
-                    instance_type: m5.xlarge
-                    spark_conf:
-                      spark_app_name: general_tasks
-                    on_demand:
-                      composition: DRIVER_ONLY
-                      bid_price_percentage: 100
-                    auto_terminate: 60
-            sqlWarehousesConfiguration: # parameters.compute.sqlWarehousesConfiguration
-              title: SQL Warehouses
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  size:
-                    title: Size
-                    type: string
-                    enum: [Small, Medium, Large]
-                  photon:
-                    title: Enable Photon
-                    type: boolean
-                  serverless:
-                    title: Enable Serverless
-                    type: boolean
-                  min_clusters:
-                    title: Minimum Clusters
-                    type: integer
-                  max_clusters:
-                    title: Maximum Clusters
-                    type: integer
-                  spot_instance_policy:
-                    title: Spot Instance Policy
-                    type: string
-                    enum: [COST_OPTIMIZED, RELIABILITY_OPTIMIZED]
-                  auto_terminate:
-                    title: Auto Terminate (minutes)
-                    type: integer
-                default:
-                  - name: SQL Shared
-                    size: Small
-                    photon: true
-                    serverless: true
-                    min_clusters: 2
-                    max_clusters: 3
-                    spot_instance_policy: COST_OPTIMIZED
-                    auto_terminate: 60
-      dependencies: # Condition for this entire step
-        enable_compute_config: [true]
-
-    - title: Catalog Configuration
-      properties: # Fields are direct children of this step
-        catalog: # This object will be parameters.catalog
-          title: Catalog Configuration
-          type: object
-          properties:
-            catalogConfiguration: # parameters.catalog.catalogConfiguration
-              title: Catalogs
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  storage_root:
-                    title: Storage Root
-                    type: string
-                  force_destroy:
-                    title: Force Destroy
-                    type: boolean
-                default:
-                  - name: main
-                    storage_root: "s3://bucket/unity-catalog/"
-                    force_destroy: true
-            externalLocationConfiguration: # parameters.catalog.externalLocationConfiguration
-              title: External Locations
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  url:
-                    title: URL
-                    type: string
-                  credential_name:
-                    title: Credential Name
-                    type: string
-                  force_destroy:
-                    title: Force Destroy
-                    type: boolean
-                default:
-                  - name: main
-                    url: "s3://bucket/external-location/"
-                    credential_name: unity-catalog-credential
-                    force_destroy: true
-      dependencies: # Condition for this entire step
-        enable_catalog_config: [true]
-
-    - title: Advanced Security Configuration
-      properties: # Fields are direct children of this step
-        security: # This object will be parameters.security
-          title: Security Configuration
-          type: object
-          properties:
-            networkAcls: # parameters.security.networkAcls
-              title: Network ACLs
-              type: array
-              minItems: 1
-              ui:options:
-                addable: true
-                orderable: true
-                removable: true
-                expandable: true
-              items:
-                type: object
-                properties:
-                  name:
-                    title: Name
-                    type: string
-                  type:
-                    title: Type
-                    type: string
-                    enum: [private, public]
-                  rules:
-                    title: Rules
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        protocol:
-                          title: Protocol
-                          type: string
-                          enum: [tcp, udp]
-                        port:
-                          title: Port
-                          type: integer
-                default:
-                  - name: default-private
-                    type: private
-                    rules:
-                      - protocol: tcp
-                        port: 80
-      dependencies: # Condition for this entire step
-        enable_advanced_security_config: [true]
-
-    - title: CI/CD Configuration
-      properties:
-        cicd:
-          title: CI/CD Configuration
-          type: object
-          properties:
-            repoUrl:
-              title: Repository URL
-              type: string
-              ui:field: RepoUrlPicker
-              ui:options:
-                allowedHosts:
-                  - github.com
-            databricksHost:
-              title: Databricks Host
-              type: string
-              description: The Databricks workspace URL
-            databricksClientId:
-              title: Databricks Client ID
-              type: string
-              description: The OAuth application ID for Databricks
-            databricksClientSecret:
-              title: Databricks Client Secret
-              type: string
-              ui:widget: password
-              description: The OAuth application secret for Databricks
-            awsRegion:
-              title: AWS Region
-              type: string
-              default: us-east-1
-              description: The AWS region where resources will be deployed
-            awsOidcRoleArn:
-              title: AWS OIDC Role ARN
-              type: string
-              description: The ARN of the AWS role to assume for deployment
-            tfStateBucket:
-              title: Terraform State S3 Bucket
-              type: string
-              description: The S3 bucket name for storing Terraform state
-            appS3BucketName:
-              title: Application S3 Bucket Name
-              type: string
-              description: The S3 bucket name for application data
-      required:
-        - cicd
 
   steps:
     - id: fetch-base
@@ -463,36 +35,26 @@ spec:
         templateFileExtension: '.njk'
         targetPath: ./config
         values:
-          aws_region: ${{ parameters.cicd.awsRegion or 'us-east-1' }}
-          databricks_account_id: ${{ parameters.cicd.databricksClientId or '' }}
+          aws_region: ${{ parameters.awsRegion }}
+          databricks_account_id: ${{ parameters.databricksAccountId }}
+          workspaces: ${{ parameters.workspace.workspaceConfiguration }}
+          metastore:
+            storage: 
+              enabled: ${{ parameters.enableMetaStoreStorage }}
+              s3_prefix: ${{ parameters.metastoreStorage.s3_prefix }}
+              s3_versioning: ${{ parameters.metastoreStorage.s3_versioning }}
+          isWorkspaceEnabled: ${{ parameters.isWorkspaceEnabled }}
+          cloud_resources:
+            credential:
+              policy: ${{ parameters.workspace.databricksCredential.databricksCrossAccountPolicyType }}
+            storage: ${{ parameters.workspace.databricksStorages }}
+            encryption: ${{ parameters.workspace.databricksEncryptions }}
+          clusters: ${{ parameters.workspace.clustersConfiguration }}
+          sql_warehouses: ${{ parameters.workspace.sqlWarehousesConfiguration }}
 
-          # Metastore related values - ensuring robustness
-          metastore_storage_enabled: ${{ parameters.enable_metastore_security_config }}
-          metastore_s3_prefix: ${{ (parameters.metastoreStorage and parameters.metastoreStorage.s3_prefix) or 'thoughtworks' }}
-          # Ensure s3_versioning is handled correctly if metastoreStorage is undefined.
-          # If s3_versioning is boolean, (undefined and true) is false. (parameters.metastoreStorage and parameters.metastoreStorage.s3_versioning) will be undefined if not set.
-          # Defaulting to true if not specifically set and enabled.
-          metastore_s3_versioning: ${{ (parameters.metastoreStorage and parameters.metastoreStorage.s3_versioning is defined) and parameters.metastoreStorage.s3_versioning or true }}
+          catalogs: ${{ parameters.catalog.catalogConfiguration }}
+          external_locations: ${{ parameters.catalog.externalLocationConfiguration }}
 
-          # Workspace related values - ensuring robustness
-          isWorkspaceEnabled: ${{ parameters.enable_workspace_config }}
-          # parameters.workspace is the object containing .databricksCredential, .databricksStorages, .databricksEncryptions, .workspaceConfiguration
-          workspaces: ${{ (parameters.workspace and parameters.workspace.workspaceConfiguration) or [] }}
-          cloud_resources_credential_policy: ${{ (parameters.workspace and parameters.workspace.databricksCredential and parameters.workspace.databricksCredential.databricksCrossAccountPolicyType) or 'customer' }}
-          cloud_resources_storage: ${{ (parameters.workspace and parameters.workspace.databricksStorages) or [] }}
-          cloud_resources_encryption: ${{ (parameters.workspace and parameters.workspace.databricksEncryptions) or [] }}
-          
-          # Compute related values - ensuring robustness
-          # isComputeEnabled: ${{ parameters.enable_compute_config }} # You can pass this if Nunjucks needs it
-          clusters: ${{ (parameters.compute and parameters.compute.clustersConfiguration) or [] }}
-          sql_warehouses: ${{ (parameters.compute and parameters.compute.sqlWarehousesConfiguration) or [] }}
-
-          # Catalog related values - ensuring robustness
-          # isCatalogEnabled: ${{ parameters.enable_catalog_config }} # You can pass this if Nunjucks needs it
-          catalogs: ${{ (parameters.catalog and parameters.catalog.catalogConfiguration) or [] }}
-          external_locations: ${{ (parameters.catalog and parameters.catalog.externalLocationConfiguration) or [] }}
-
-          # --- Values from original template that seem generally applicable ---
           monitoring:
             datadog: false
             cloudwatch: false
@@ -500,7 +62,7 @@ spec:
             enable_auto_prefix: true
             enable_auto_suffix: true
             create_groups: false
-            network_acls: # This seems like a default, adjust if it should be conditional on advanced_security
+            network_acls:
               private:
                 outbound:
                   - protocol: tcp
@@ -526,7 +88,7 @@ spec:
       action: publish:github
       input:
         allowedHosts: [ 'github.com' ]
-        repoUrl: ${{ parameters.cicd.repoUrl }}
+        repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: private
         defaultBranch: main
         token: ${{ secrets.USER_OAUTH_TOKEN or false }}
@@ -534,12 +96,13 @@ spec:
         secrets:
           DATABRICKS_CLIENT_SECRET: ${{ secrets.databricksClientSecret }}
         repoVariables:
-          DATABRICKS_HOST: ${{ parameters.cicd.databricksHost }}
-          DATABRICKS_CLIENT_ID: ${{ parameters.cicd.databricksClientId }}
-          AWS_REGION: ${{ parameters.cicd.awsRegion }}
-          AWS_ROLE_TO_ASSUME: ${{ parameters.cicd.awsOidcRoleArn }}
-          TF_BACKEND_BUCKET: ${{ parameters.cicd.tfStateBucket }}
-          TF_VAR_s3_bucket_name_main: ${{ parameters.cicd.appS3BucketName }}
+          DATABRICKS_HOST: ${{ parameters.databricksHost }}
+          DATABRICKS_CLIENT_ID: ${{ parameters.databricksClientId }}
+          AWS_REGION: ${{ parameters.awsRegion }}
+          AWS_ROLE_TO_ASSUME: ${{ parameters.awsOidcRoleArn }}
+          TF_BACKEND_BUCKET: ${{ parameters.tfStateBucket }}
+          TF_VAR_s3_bucket_name_main: ${{ parameters.appS3BucketName }}
+          # this need to add another action, consider to use: "databricks/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}/terraform.tfstate"
           TF_STATE_KEY: ${{ steps['read-tf-state-key-value'].output.content }}
 
   output:
