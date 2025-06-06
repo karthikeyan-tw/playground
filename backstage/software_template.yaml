@@ -18,7 +18,7 @@ spec:
   type: service
   parameters:
     - $yaml: ./parameters/metastore.yaml
-    - $yaml: ./parameters/workspace_.yaml
+    - $yaml: ./parameters/workspace.yaml
 
 
   steps:
