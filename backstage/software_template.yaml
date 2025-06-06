@@ -1,12 +1,14 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: playground
-  title: Playground
+  name: databricks-terraform-accelerator
+  title: Databricks Terraform Accelerator
   description: |
     This accelerator provides Terraform modules to provision Databricks workspaces,
         compute, Unity Catalog, metastores, and security configurations, designed to be
         composed together for tailored deployments.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - databricks
     - terraform
@@ -19,6 +21,54 @@ spec:
   parameters:
     - $yaml: ./parameters/metastore.yaml
     - $yaml: ./parameters/workspace.yaml
+    
+    - title: CI/CD Configuration
+      properties:
+        repoUrl:
+          title: Repository URL
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        databricksHost:
+          title: Databricks Host
+          type: string
+          description: The Databricks workspace URL
+        databricksClientId:
+          title: Databricks Client ID
+          type: string
+          description: The OAuth application ID for Databricks
+        databricksAccountId:
+          title: Databricks Account ID
+          type: string
+          description: The Databricks account ID
+        awsRegion:
+          title: AWS Region
+          type: string
+          default: us-east-1
+          description: The AWS region where resources will be deployed
+        awsOidcRoleArn:
+          title: AWS OIDC Role ARN
+          type: string
+          description: The ARN of the AWS role to assume for deployment
+        tfStateBucket:
+          title: Terraform State S3 Bucket
+          type: string
+          description: The S3 bucket name for storing Terraform state
+        appS3BucketName:
+          title: Application S3 Bucket Name
+          type: string
+          description: The S3 bucket name for application data
+      required:
+        - repoUrl
+        - databricksHost
+        - databricksClientId
+        - databricksAccountId
+        - awsRegion
+        - awsOidcRoleArn
+        - tfStateBucket
+        - appS3BucketName
 
 
   steps:
@@ -52,8 +102,8 @@ spec:
           clusters: ${{ parameters.workspace.clustersConfiguration }}
           sql_warehouses: ${{ parameters.workspace.sqlWarehousesConfiguration }}
 
-          catalogs: ${{ parameters.catalog.catalogConfiguration }}
-          external_locations: ${{ parameters.catalog.externalLocationConfiguration }}
+          catalogs: []
+          external_locations: []
 
           monitoring:
             datadog: false
