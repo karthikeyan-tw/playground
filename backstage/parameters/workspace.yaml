@@ -42,10 +42,7 @@ dependencies:
                       s3_prefix:
                         title: S3 prefix
                         type: string
-                  default:
-                    - name: main
-                      s3_prefix: thoughtworks
-                    - name: finance
+
                 databricksEncryptions:
                   title: Databricks Encryptions
                   type: array
@@ -71,14 +68,7 @@ dependencies:
                             - STORAGE
                         uniqueItems: true
                         ui:widget: checkboxes
-                  default:
-                    - name: main
-                      use_cases: 
-                        - MANAGED_SERVICES
-                        - STORAGE
-                    - name: dbfs
-                      use_cases: 
-                        - MANAGED_SERVICES
+
                 workspaceConfiguration:
                   title: Workspace
                   type: array
@@ -112,16 +102,7 @@ dependencies:
                           storage:
                             title: Storage
                             type: string
-                  default:
-                    - name: thoughtworks-main
-                      storage: main
-                      network: main
-                      private_access: true
-                      encryption:
-                        storage: dbfs
-                    - name: thoughtworks-finance
-                      storage: finance
-                      network: finance
+
                 clustersConfiguration:
                   title: Clusters
                   type: array
@@ -170,18 +151,7 @@ dependencies:
                       auto_terminate:
                         title: Auto Terminate (minutes)
                         type: integer
-                  default:
-                    - name: Shared Cluster
-                      spark_version: LTS
-                      photon: true
-                      driver_instance_type: m5.large
-                      instance_type: m5.xlarge
-                      spark_conf:
-                        spark_app_name: general_tasks
-                      on_demand:
-                        composition: DRIVER_ONLY
-                        bid_price_percentage: 100
-                      auto_terminate: 60
+
                 sqlWarehousesConfiguration:
                   title: SQL Warehouses
                   type: array
@@ -220,12 +190,4 @@ dependencies:
                       auto_terminate:
                         title: Auto Terminate (minutes)
                         type: integer
-                  default:
-                    - name: SQL Shared
-                      size: Small
-                      photon: true
-                      serverless: true
-                      min_clusters: 2
-                      max_clusters: 3
-                      spot_instance_policy: COST_OPTIMIZED
-                      auto_terminate: 60
+
